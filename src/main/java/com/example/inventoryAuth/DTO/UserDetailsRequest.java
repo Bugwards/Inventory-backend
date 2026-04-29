@@ -1,5 +1,6 @@
 package com.example.inventoryAuth.DTO;
 
+
 import com.example.inventoryAuth.Entity.Location;
 import com.example.inventoryAuth.Entity.Role;
 import lombok.AllArgsConstructor;

@@ -1,5 +1,7 @@
 package com.example.inventoryAuth.Service;
 
+
+
 import com.example.inventoryAuth.DTO.UserDetailsRequest;
 import com.example.inventoryAuth.Entity.User;
 import com.example.inventoryAuth.Repository.UserRepository;
@@ -27,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));;
+        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
     }
 

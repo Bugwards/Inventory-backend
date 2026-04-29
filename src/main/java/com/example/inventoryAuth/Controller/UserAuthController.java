@@ -1,9 +1,9 @@
 package com.example.inventoryAuth.Controller;
 
+
+
 import com.example.inventoryAuth.DTO.AuthRequest;
 import com.example.inventoryAuth.DTO.UserDetailsRequest;
-import com.example.inventoryAuth.Entity.User;
-
 import com.example.inventoryAuth.Repository.UserRepository;
 import com.example.inventoryAuth.Service.CustomUserDetailsService;
 import com.example.inventoryAuth.Utility.JwtUtil;
@@ -18,16 +18,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserAuthController {
 
    @Autowired
-    CustomUserDetailsService customUserDetailsService;
+   CustomUserDetailsService customUserDetailsService;
 
    @Autowired
     AuthenticationManager authenticationManager;
 
    @Autowired
-    JwtUtil jwtUtil;
+   JwtUtil jwtUtil;
 
    @Autowired
-    UserRepository userRepository;
+   UserRepository userRepository;
 
 
    @PostMapping("/register")

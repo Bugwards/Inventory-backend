@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:8090/Test_db
+    username: postgres
+    password: Thamaz123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true

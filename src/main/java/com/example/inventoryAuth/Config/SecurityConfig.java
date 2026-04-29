@@ -1,5 +1,7 @@
 package com.example.inventoryAuth.Config;
 
+
+
 import com.example.inventoryAuth.Filter.JwtAuthFilter;
 import com.example.inventoryAuth.Service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,JwtAuthFilter jwtAuthFilter)throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter)throws Exception{
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth->
