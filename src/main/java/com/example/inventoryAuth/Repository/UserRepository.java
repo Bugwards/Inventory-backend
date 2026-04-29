@@ -1,5 +1,6 @@
 package com.example.inventoryAuth.Repository;
 
+
 import com.example.inventoryAuth.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

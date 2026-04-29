@@ -1,11 +1,12 @@
 package com.example.inventoryAuth.Filter;
 
-import com.example.inventoryAuth.Service.CustomUserDetailsService;
+
 import com.example.inventoryAuth.Utility.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.example.inventoryAuth.Service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -25,7 +26,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public JwtAuthFilter(JwtUtil jwtUtil,CustomUserDetailsService customUserDetailsService){
+    public JwtAuthFilter(JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService){
         this.jwtUtil=jwtUtil;
         this.customUserDetailsService=customUserDetailsService;
     }
