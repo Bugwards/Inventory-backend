@@ -45,13 +45,19 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
+<<<<<<< HEAD
 
+=======
+>>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
         return UserDetails.super.isAccountNonExpired();
     }
 
     @Override
     public boolean isAccountNonLocked() {
+<<<<<<< HEAD
 
+=======
+>>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
         return UserDetails.super.isAccountNonLocked();
     }
 
@@ -62,7 +68,10 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+<<<<<<< HEAD
 
+=======
+>>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
         return UserDetails.super.isEnabled();
     }
 }
