@@ -42,5 +42,9 @@ public class Stock {
         this.createdAt = LocalDateTime.now();
     }
 
+    @ManyToOne
+    @JoinColumn(name = "grn_item_id", nullable = false)
+    private GRNItem grnItem;
+
 
 }
