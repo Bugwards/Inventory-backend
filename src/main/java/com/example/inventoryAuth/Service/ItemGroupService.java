@@ -49,71 +49,44 @@ public class ItemGroupService {
     }
 
     public Object getGroupSortByGroupName(Integer page,String sortBy) {
-<<<<<<< HEAD
-        if(sortBy.equals("Asc"))
-        {   if(page!=null ){
-=======
-     if(sortBy.equals("Asc"))
-     {   if(page!=null ){
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
-            PageRequest pageable = PageRequest.of(
-                    page,
-                    5,
-                    Sort.by("name").ascending()
-            );
-            return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
+
+        if (sortBy.equals("Asc")) {
+            if (page != null) {
+
+                        PageRequest pageable = PageRequest.of(
+                                page,
+                                5,
+                                Sort.by("name").ascending()
+                        );
+                        return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
+                    }
+
+                    List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").ascending())
+                            .stream()
+                            .map(this::mapToItemGroupResponse)
+                            .toList();
+
+                    return list;
+                } else {
+                    if (page != null) {
+                        PageRequest pageable = PageRequest.of(
+                                page,
+                                5,
+                                Sort.by("name").descending()
+                        );
+                        return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
+                    }
+                    List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").descending())
+                            .stream()
+                            .map(this::mapToItemGroupResponse)
+                            .toList();
+
+                    return list;
+                }
+
+
         }
-<<<<<<< HEAD
-            List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").ascending())
-                    .stream()
-                    .map(this::mapToItemGroupResponse)
-                    .toList();
 
-            return list;
-        }
-        else{
-            if(page!=null ){
-                PageRequest pageable = PageRequest.of(
-                        page,
-                        5,
-                        Sort.by("name").descending()
-                );
-                return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
-            }
-            List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").descending())
-                    .stream()
-                    .map(this::mapToItemGroupResponse)
-                    .toList();
-
-            return list;
-        }
-=======
-        List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").ascending())
-                .stream()
-                .map(this::mapToItemGroupResponse)
-                .toList();
-
-        return list;
-     }
-     else{
-         if(page!=null ){
-             PageRequest pageable = PageRequest.of(
-                     page,
-                     5,
-                     Sort.by("name").descending()
-             );
-             return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
-         }
-         List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").descending())
-                 .stream()
-                 .map(this::mapToItemGroupResponse)
-                 .toList();
-
-         return list;
-     }
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
-
-    }
 
     public Object getGroupSortByGroupCode(Integer page,String sortBy) {
         if(sortBy.equals("Asc"))
@@ -125,21 +98,14 @@ public class ItemGroupService {
             );
             return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
         }
-<<<<<<< HEAD
+
             List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("code").ascending())
                     .stream()
                     .map(this::mapToItemGroupResponse)
                     .toList();
 
             return list;
-=======
-        List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("code").ascending())
-                .stream()
-                .map(this::mapToItemGroupResponse)
-                .toList();
 
-        return list;
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
         }
         else{
             if(page!=null){

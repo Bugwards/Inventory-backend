@@ -1,11 +1,8 @@
 package com.example.inventoryAuth.Entity;
 
-<<<<<<< HEAD
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-=======
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,10 +38,7 @@ public class Item {
 
     @ManyToOne
     @JoinColumn(name = "item_group_id" , nullable = false)
-<<<<<<< HEAD
     @JsonIgnore
-=======
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
     private ItemGroup itemGroup;
 
 }

@@ -1,10 +1,5 @@
 package com.example.inventoryAuth.Service;
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
 import com.example.inventoryAuth.DTO.UserDetailsRequest;
 import com.example.inventoryAuth.Entity.User;
 import com.example.inventoryAuth.Repository.UserRepository;
@@ -37,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public void saveUser(UserDetailsRequest userDetails){
-<<<<<<< HEAD
+
         User user = new User();
         user.setUsername(userDetails.getUsername());
         user.setRole(userDetails.getRole());
@@ -45,15 +40,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         user.setLocation(userDetails.getLocation());
         user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         userRepository.save(user);
-=======
-          User user = new User();
-          user.setUsername(userDetails.getUsername());
-          user.setRole(userDetails.getRole());
-          user.setEmail(userDetails.getEmail());
-          user.setLocation(userDetails.getLocation());
-        user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
-         userRepository.save(user);
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
+
     }
 
 

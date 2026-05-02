@@ -1,10 +1,6 @@
 package com.example.inventoryAuth.Utility;
 
-<<<<<<< HEAD
-=======
 
-
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
 import com.example.inventoryAuth.Entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -54,9 +50,5 @@ public class JwtUtil {
     public boolean isTokenValid(String username, UserDetails user, String token){
         return username.equals(user.getUsername()) && !isTokenExpired(token);
     }
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
 }

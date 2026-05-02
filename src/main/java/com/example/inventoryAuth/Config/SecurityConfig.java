@@ -1,10 +1,6 @@
 package com.example.inventoryAuth.Config;
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
 import com.example.inventoryAuth.Filter.JwtAuthFilter;
 import com.example.inventoryAuth.Service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +39,9 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-<<<<<<< HEAD
+
                 .build();
-=======
-                  .build();
->>>>>>> aae77b0cf1d385ca1513e1d4cf8901adc6e1ea1b
+
     }
 
     @Bean
