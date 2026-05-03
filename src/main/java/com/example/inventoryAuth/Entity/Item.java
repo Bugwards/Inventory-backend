@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Setter
 @Getter
 @Entity
@@ -40,5 +43,8 @@ public class Item {
     @JoinColumn(name = "item_group_id" , nullable = false)
     @JsonIgnore
     private ItemGroup itemGroup;
+
+    @OneToMany(mappedBy = "item")
+    private List<GRNItem> grnItems = new ArrayList<>();
 
 }
