@@ -85,7 +85,6 @@ public class  StockTransferService {
                 StockTransferItem stockTransferItem = new StockTransferItem();
                 GRN grn = grnRepository.findByGrnNumber(grnDto.getGrnNumber());//to find grn
                 GRNItem grnItem= grnItemRepository.findByGrnAndItem(grn,item).orElse(null);//to find grnitem from grn
-                grnItem.setGrnWiseTransferredQuantity(grnDto.getTransferQty());
                 Stock stock = stockRepository.findByItemAndGrnItem(item, grnItem);
                 if(stock == null){
                     throw new RuntimeException("Stock not found for item + GRN");
@@ -97,7 +96,7 @@ public class  StockTransferService {
                     );
                 }
                 //setting stocktransferItem data
-                stockTransferItem.setTransferQty(itemDto.getTransferQty());
+                stockTransferItem.setTransferQty(grnDto.getTransferQty());
                 stockTransferItem.setStockTransfer(stockTransfer);
                 stockTransferItem.setItem(item);
                 stockTransferItem.setGrnItem(grnItem);
@@ -123,7 +122,7 @@ public class  StockTransferService {
     //get item details by keyword after press search button
     public List<ItemResponseSearchByKeyword>  findItemByName(String keyword){
         List<Item> itemList =
-                itemRepository.findByItemNameContainingIgnoreCaseOrItemCodeContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                itemRepository.findByItemNameContainingIgnoreCaseOrItemCodeContainingIgnoreCaseOrItemDescriptionContainingIgnoreCase(
                         keyword,
                         keyword,
                         keyword
@@ -229,7 +228,7 @@ public class  StockTransferService {
                 //to get currentQ we have to access stock
                 Stock stock = stockRepository.findByItemAndGrnItem(stockTransferItem.getItem(),grnItem);
                 grnItemDto.setCurrentQuantity(stock.getCurrentQty());
-                grnItemDto.setTransferQty(stockTransferItem.getGrnItem().getGrnWiseTransferredQuantity());
+                grnItemDto.setTransferQty(stockTransferItem.getTransferQty());
 
                 grnItemTransferredDtoList.add(grnItemDto);
 
@@ -263,7 +262,6 @@ public class  StockTransferService {
                 StockTransferItem stockTransferItem = new StockTransferItem();
                 GRN grn = grnRepository.findByGrnNumber(grnDto.getGrnNumber());
                 GRNItem grnItem= grnItemRepository.findByGrnAndItem(grn,item).orElse(null);
-                grnItem.setGrnWiseTransferredQuantity(grnDto.getTransferQty());
                 Stock stock = stockRepository.findByItemAndGrnItem(item, grnItem);
                 if(stock == null){
                     throw new RuntimeException("Stock not found for item + GRN");
@@ -274,7 +272,7 @@ public class  StockTransferService {
                                     stock.getGrnItem().getGrn().getGrnNumber()
                     );
                 }
-                stockTransferItem.setTransferQty(itemDto.getTransferQty());
+                stockTransferItem.setTransferQty(grnDto.getTransferQty());
                 stockTransferItem.setStockTransfer(stockTransfer);
                 stockTransferItem.setItem(item);
                 stockTransferItem.setGrnItem(grnItem);

@@ -15,7 +15,7 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
     List<Item> findByItemNameContainingIgnoreCase(String itemName);
     Page<Item> findByItemNameContainingIgnoreCase(String itemName, Pageable pageable);
 
-    List<Item> findByItemNameContainingIgnoreCaseOrItemCodeContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+    List<Item> findByItemNameContainingIgnoreCaseOrItemCodeContainingIgnoreCaseOrItemDescriptionContainingIgnoreCase(
             String itemName,
             String itemCode,
             String description

@@ -1,6 +1,7 @@
 package com.example.inventoryAuth.DTO;
 
 
+import com.example.inventoryAuth.Entity.Department;
 import com.example.inventoryAuth.Entity.Location;
 import com.example.inventoryAuth.Entity.Role;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,10 @@ public class UserDetailsRequest {
     private Location location;
 
     private Role role;
+
+    private Department department;
+
+    private String name;
 
 
 }

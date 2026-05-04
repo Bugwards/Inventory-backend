@@ -47,4 +47,10 @@ public class Item {
     @OneToMany(mappedBy = "item")
     private List<GRNItem> grnItems = new ArrayList<>();
 
+    @OneToMany(mappedBy = "item")
+    private List<StockIssueItem> stockIssueItemList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "item")
+    private List<StockTransferItem> stockTransferItemList = new ArrayList<>();
+
 }
