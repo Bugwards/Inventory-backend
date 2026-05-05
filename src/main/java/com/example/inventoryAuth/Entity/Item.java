@@ -1,0 +1,56 @@
+package com.example.inventoryAuth.Entity;
+
+
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Setter
+@Getter
+@Entity
+@Table(name = "item")
+public class Item {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String itemCode;
+
+    private String itemName;
+
+    private String itemGroupName;//remove this
+
+    @Column(nullable = true)
+    private String itemDescription;
+
+    private String unitOfMeasurement;
+
+    private Boolean active;
+
+    private Boolean maintainReorder;
+
+    private Integer reorderQuantity;
+
+    private Integer minimumLevel;
+
+    @ManyToOne
+    @JoinColumn(name = "item_group_id" , nullable = false)
+    @JsonIgnore
+    private ItemGroup itemGroup;
+
+    @OneToMany(mappedBy = "item")
+    private List<GRNItem> grnItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "item")
+    private List<StockIssueItem> stockIssueItemList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "item")
+    private List<StockTransferItem> stockTransferItemList = new ArrayList<>();
+
+}
