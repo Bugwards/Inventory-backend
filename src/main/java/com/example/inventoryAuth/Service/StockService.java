@@ -2,10 +2,7 @@ package com.example.inventoryAuth.Service;
 
 
 
-import com.example.inventoryAuth.Entity.Item;
-import com.example.inventoryAuth.Entity.Stock;
-import com.example.inventoryAuth.Entity.Location;
-import com.example.inventoryAuth.Entity.ReferenceType;
+import com.example.inventoryAuth.Entity.*;
 import com.example.inventoryAuth.Repository.StockRepository;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +25,8 @@ public class StockService {
                          Long refId,
                          ReferenceType refType,
                          int qty,
-                         double price) {
+                         double price,
+                         GRNItem grnItem) {
 
         Stock stock = new Stock();
         stock.setItem(item);
@@ -38,6 +36,26 @@ public class StockService {
         stock.setCurrentQty(qty);
         stock.setActualQty(qty);
         stock.setUnitPrice(price);
+        stock.setGrnItem(grnItem);
+        if (grnItem != null) {
+            stock.setGrnItem(grnItem);
+        }
+
+        stockRepository.save(stock);
+    }
+    // =========================
+    //  STOCK ADJUSTMENT
+    // =========================
+    public void adjustStockDirect(Stock stock, int qty) {
+
+        int newQty = stock.getCurrentQty() + qty;
+
+        if (newQty < 0) {
+            throw new RuntimeException("Not enough stock for reference: " + stock.getReferenceId());
+        }
+
+        stock.setCurrentQty(newQty);
+        stock.setActualQty(stock.getActualQty() + qty);
 
         stockRepository.save(stock);
     }

@@ -34,7 +34,7 @@ public class GRNService {
                       ItemRepository itemRepository,
                       StockService stockService,
                       UserRepository userRepository
-                      ) {
+    ) {
         this.grnRepository = grnRepository;
         this.itemRepository = itemRepository;
         this.stockService = stockService;
@@ -178,7 +178,9 @@ public class GRNService {
                     grn.getGrnId(),
                     ReferenceType.GRN,
                     item.getQuantity(),
-                    item.getUnitPrice()
+                    item.getUnitPrice(),
+                    item
+
             );
         }
 
