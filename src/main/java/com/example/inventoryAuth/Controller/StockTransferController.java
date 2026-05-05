@@ -10,12 +10,14 @@ import com.example.inventoryAuth.Service.StockTransferService;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/stocktransfer")
+@EnableMethodSecurity
 public class StockTransferController {
      @Autowired
      StockTransferService stockTransferservice ;

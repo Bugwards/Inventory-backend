@@ -3,6 +3,7 @@ package com.example.inventoryAuth.Controller;
 
 
 import com.example.inventoryAuth.DTO.AuthRequest;
+import com.example.inventoryAuth.DTO.AuthResponse;
 import com.example.inventoryAuth.DTO.UserDetailsRequest;
 import com.example.inventoryAuth.Repository.UserRepository;
 import com.example.inventoryAuth.Service.CustomUserDetailsService;
@@ -38,19 +39,17 @@ public class UserAuthController {
 
 
     @PostMapping("/login")
-    public String login(@RequestBody AuthRequest authRequest){
+    public AuthResponse login(@RequestBody AuthRequest authRequest){
 
-        try{
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(),authRequest.getPassword())
             );
 
-            return jwtUtil.generateToken(authRequest.getUsername(),userRepository.findByUsername(authRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found")).getRole());
+            String token = jwtUtil.generateToken(authRequest.getUsername(),userRepository.findByUsername(authRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found")).getRole());
 
-        }
-        catch (Exception e){
-            return "invalid Credential";
-        }
+            return new AuthResponse(token);
+
     }
 
 }

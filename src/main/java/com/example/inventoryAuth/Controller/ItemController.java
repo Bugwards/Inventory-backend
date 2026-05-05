@@ -18,9 +18,10 @@ public class ItemController {
     @Autowired
     ItemService itemService;
 
-    @PreAuthorize("hasRole('STORE_STAFF', 'SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
     @PostMapping("createItem")
     public Item create(@RequestBody Item item) {
+
         return itemService.create(item);
     }
 

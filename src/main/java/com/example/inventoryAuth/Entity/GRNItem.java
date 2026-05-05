@@ -38,7 +38,5 @@ public class GRNItem {
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
-    private Integer grnWiseTransferredQuantity;
 
-    private Integer grnWiseReceivedQuantity;
 }

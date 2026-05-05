@@ -23,6 +23,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
 
+    private String name;
+
     @Column(nullable = false, unique = true)
     private String username;
 
@@ -37,6 +39,11 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Location location;
+
+    @Enumerated(EnumType.STRING)
+    private Department department;
+
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
