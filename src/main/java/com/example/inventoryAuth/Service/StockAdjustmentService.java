@@ -25,15 +25,21 @@ public class StockAdjustmentService {
     private final StockRepository stockRepository;
     private final StockService stockService;
     private final UserRepository userRepository;
+    private final BinCardService binCardService;
+
 
     public StockAdjustmentService(StockAdjustmentRepository repository,
                                   StockRepository stockRepository,
                                   StockService stockService,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  BinCardService binCardService
+    ) {
         this.repository = repository;
         this.stockRepository = stockRepository;
         this.stockService = stockService;
         this.userRepository = userRepository;
+        this.binCardService = binCardService;
+
 
     }
 
@@ -143,6 +149,12 @@ public class StockAdjustmentService {
             }
 
             stockService.adjustStockDirect(stock, item.getQuantity());
+
+            binCardService.createBinCardFromStockAdjustment(
+                    saved,
+                    item,
+                    stock
+            );
         }
 
         return saved;

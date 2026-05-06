@@ -60,8 +60,13 @@ public class ItemGroupController {
         return itemGroupService.getGroupSortByGroupCode(page,sortBy);
     }
 
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
-    @PutMapping("{code}")
+    @GetMapping("getItemGroupRecord")
+    public ItemGroupDTO getGroupRecord(@RequestParam String code){
+        return itemGroupService.getSelectedGroup(code);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_STORE_STAFF')")
+    @PutMapping("/{code}")
     public ResponseEntity<ItemGroup> updateItemGroup(@PathVariable String code, @RequestBody ItemGroupDTO groupDTO){
         ItemGroup updated = itemGroupService.updateItemGroup(code, groupDTO);
         return ResponseEntity.ok(updated);

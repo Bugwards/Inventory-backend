@@ -67,18 +67,16 @@ public class ItemController {
         return itemService.getItemSortByItemGroup(page,sortBy);
     }
 
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
-    @PutMapping("{itemCode}")
+    @GetMapping("/getItemRecord")
+    public ItemDTO getItem(@RequestParam String itemCode){
+        return itemService.getSelectedItem(itemCode);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_STORE_STAFF')")
+    @PutMapping("/{itemCode}")
     public ResponseEntity<Item> updateItem(@PathVariable String itemCode, @RequestBody ItemDTO itemDTO){
         Item updated = itemService.updateItem(itemCode , itemDTO);
         return ResponseEntity.ok(updated);
-    }
-
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
-    @DeleteMapping("delete/{itemCode}")
-    public String deleteItem(@PathVariable String itemCode){
-        itemService.deleteItem(itemCode);
-        return "Item Deleted successfully";
     }
 
 }

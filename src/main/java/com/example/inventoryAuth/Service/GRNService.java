@@ -28,17 +28,20 @@ public class GRNService {
     private final ItemRepository itemRepository;
     private final StockService stockService;
     private final UserRepository userRepository;
+    private final BinCardService binCardService;
 
 
     public GRNService(GrnRepository grnRepository,
                       ItemRepository itemRepository,
                       StockService stockService,
-                      UserRepository userRepository
+                      UserRepository userRepository,
+                      BinCardService binCardService
     ) {
         this.grnRepository = grnRepository;
         this.itemRepository = itemRepository;
         this.stockService = stockService;
         this.userRepository = userRepository;
+        this.binCardService = binCardService;
 
     }
 
@@ -172,7 +175,7 @@ public class GRNService {
         }
 
         for (GRNItem item : grn.getItems()) {
-            stockService.addStock(
+            Stock stock = stockService.addStock(
                     item.getItem(),
                     grn.getLocation(),
                     grn.getGrnId(),
@@ -182,6 +185,8 @@ public class GRNService {
                     item
 
             );
+            binCardService.createBinCardFromGRN(grn, item, stock);
+
         }
 
         grn.setStatus(Status.APPROVED);

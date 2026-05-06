@@ -43,6 +43,9 @@ public class StockIssueService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    BinCardService binCardService;
+
     public Location getCurrentUserLocation() {
         Object principal = SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -386,6 +389,11 @@ public class StockIssueService {
 
            stock.setActualQty(stock.getActualQty() - stockIssueItem.getIssuedQuantity());
            stockRepository.save(stock);
+           binCardService.createBinCardFromStockIssue(
+                   stock,
+                   stockIssue,
+                   stockIssueItem
+           );
        }
 
        stockIssueRepository.save(stockIssue);

@@ -27,16 +27,23 @@ public class OpeningStockService {
     private final ItemRepository itemRepository;
     private final StockService stockService;
     private final UserRepository userRepository;
+    private final BinCardService binCardService;
+
 
 
     public OpeningStockService(OpeningStockRepository repository,
                                ItemRepository itemRepository,
                                StockService stockService,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               BinCardService binCardService
+
+    ) {
         this.repository = repository;
         this.itemRepository = itemRepository;
         this.stockService = stockService;
         this.userRepository = userRepository;
+        this.binCardService = binCardService;
+
     }
     // =========================
     //  CURRENT USER
@@ -151,7 +158,7 @@ public class OpeningStockService {
         }
 
         for (OpeningStockItem item : os.getItems()) {
-            stockService.addStock(
+            Stock stock=stockService.addStock(
                     item.getItem(),
                     os.getLocation(),
                     os.getOpeningStockId(),
@@ -160,6 +167,8 @@ public class OpeningStockService {
                     item.getUnitPrice(),
                     null
             );
+            binCardService.createBinCardFromOpeningStock(os , item , stock);
+
         }
 
         os.setStatus(Status.APPROVED);

@@ -20,7 +20,7 @@ public class StockService {
     // =========================
     // ADD STOCK (GRN / OPENING)
     // =========================
-    public void addStock(Item item,
+    public Stock addStock(Item item,
                          Location location,
                          Long refId,
                          ReferenceType refType,
@@ -41,7 +41,7 @@ public class StockService {
             stock.setGrnItem(grnItem);
         }
 
-        stockRepository.save(stock);
+        return stockRepository.save(stock);
     }
     // =========================
     //  STOCK ADJUSTMENT

@@ -45,6 +45,9 @@ public class  StockTransferService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    BinCardService binCardService;
+
     public Location getCurrentUserLocation() {
         Object principal = SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -296,6 +299,12 @@ public class  StockTransferService {
         for(StockTransferItem stockTItem:StocktransferItemList){
             Stock stock=stockRepository.findByItemAndGrnItem(stockTItem.getItem(),stockTItem.getGrnItem());
             stock.setActualQty(stock.getActualQty()-stockTItem.getTransferQty());
+
+            binCardService.createBinCardFromStockTransfer(
+                    stock,
+                    stockTransfer,
+                    stockTItem
+            );
         }
 
         stockTransferRepository.save(stockTransfer);
