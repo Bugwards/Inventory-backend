@@ -1,6 +1,7 @@
 package com.example.inventoryAuth.Repository;
 
 
+import com.example.inventoryAuth.Entity.Item;
 import com.example.inventoryAuth.Entity.StockTransfer;
 import com.example.inventoryAuth.Entity.StockTransferItem;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,7 @@ import java.util.List;
 @Repository
 public interface StockTransferItemRepository extends JpaRepository<StockTransferItem,Long> {
     List<StockTransferItem> findByStockTransfer(StockTransfer stockTransfer);
+
+    StockTransferItem findByStockTransferAndItem(StockTransfer stockTransfer, Item item);
 }
+
