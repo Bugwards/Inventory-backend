@@ -9,28 +9,36 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "item_group")
+@Table(name = "item_groups")
 public class ItemGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(
+            name = "item_group_code",
+            unique = true,
+            nullable = false
+    )
     private String code;
 
-    @Column(unique = true, nullable = false)
+    @Column(
+            name = "item_group_name",
+            unique = true,
+            nullable = false
+    )
     private String name;
 
-    @Column(nullable = true)
+    @Column(name = "description")
     private String description;
 
+    @Column(name = "maintain_reorder_level")
     private Boolean maintainReorder;
 
+    @Column(name = "gl_account")
     private String glAccount;
 
     @OneToMany(mappedBy = "itemGroup")
     private List<Item> items;
-
 }
-

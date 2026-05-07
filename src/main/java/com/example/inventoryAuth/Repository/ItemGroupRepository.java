@@ -12,4 +12,6 @@ public interface ItemGroupRepository extends JpaRepository<ItemGroup, Long>{
     Optional<ItemGroup> findByCode(String code);
     Page<ItemGroup> findByNameContainingIgnoreCase(String name, Pageable pageable);
     List<ItemGroup> findByNameContainingIgnoreCase(String name);
+    List<ItemGroup> findByName(String itemGroupName);
+
 }
