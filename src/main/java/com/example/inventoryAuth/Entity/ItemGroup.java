@@ -1,5 +1,6 @@
 package com.example.inventoryAuth.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,7 @@ public class ItemGroup {
 
     private String glAccount;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "itemGroup")
     private List<Item> items;
 

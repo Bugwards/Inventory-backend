@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:8090/Test_db
-    username: postgres
-    password: Thamaz123
+    url: jdbc:postgresql://aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres?user=postgres.rzddhksaimpzmdroixbk&password=Bugwarts-IT-23
+    username: postgres.rzddhksaimpzmdroixbk
+    password: Bugwarts-IT-23
 
   jpa:
     hibernate:

@@ -4,6 +4,7 @@ package com.example.inventoryAuth.DTO;
 import com.example.inventoryAuth.Entity.Location;
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,6 +20,7 @@ public class GRNResponseDTO {
     private String status;
     private String createdBy;
     private String approvedBy;
+    private LocalDateTime approvedAt;
     private String comment;
 
     private List<GRNItemResponseDTO> items;

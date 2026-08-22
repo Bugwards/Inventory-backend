@@ -2,6 +2,7 @@ package com.example.inventoryAuth.Service;
 
 import com.example.inventoryAuth.DTO.ItemDTO;
 import com.example.inventoryAuth.DTO.ItemResponse;
+import com.example.inventoryAuth.DTO.ItemResponseSearchByKeyword;
 import com.example.inventoryAuth.Entity.Item;
 import com.example.inventoryAuth.Entity.ItemGroup;
 import com.example.inventoryAuth.Repository.ItemGroupRepository;
@@ -25,9 +26,9 @@ public class ItemService {
     ItemGroupRepository groupRepo;
 
     public Item create(Item item) {
-        Long groupId = item.getItemGroup().getId();
+        String code = item.getItemGroup().getCode();
 
-        ItemGroup group = groupRepo.findById(groupId)
+        ItemGroup group = groupRepo.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
         item.setItemGroup(group);
@@ -59,7 +60,7 @@ public class ItemService {
 
 
     public Object getItemSortByItemCode(Integer page , String sortBy) {
-        if(sortBy.equals("ASC")){
+        if (sortBy.equalsIgnoreCase("ASC")){
             if(page != null){
                 PageRequest pageable = PageRequest.of(
                         page,
@@ -92,7 +93,7 @@ public class ItemService {
 
     }
     public Object getItemSortByItemName(Integer page, String sortBy) {
-        if(sortBy.equals("ASC")){
+        if (sortBy.equalsIgnoreCase("ASC")){
             if(page != null){
                 PageRequest pageable = PageRequest.of(
                         page,
@@ -125,17 +126,17 @@ public class ItemService {
 
     }
     public Object getItemSortByItemGroup(Integer page, String sortBy) {
-        if (sortBy.equals("ASC")) {
+        if (sortBy.equalsIgnoreCase("ASC")) {
             if (page != null) {
                 PageRequest pageable = PageRequest.of(
                         page,
                         5,
-                        Sort.by("itemGroup").ascending()
+                        Sort.by("itemGroup.name").ascending()
                 );
                 return itemRepo.findAll(pageable).map(this::mapToResponse);
 
             }
-            List<ItemResponse> list = itemRepo.findAll(Sort.by("itemGroup").ascending())
+            List<ItemResponse> list = itemRepo.findAll(Sort.by("itemGroup.name").ascending())
                     .stream()
                     .map(this::mapToResponse)
                     .toList();
@@ -147,12 +148,12 @@ public class ItemService {
                 PageRequest pageable = PageRequest.of(
                         page,
                         5,
-                        Sort.by("itemGroup").descending()
+                        Sort.by("itemGroup.name").descending()
                 );
                 return itemRepo.findAll(pageable).map(this::mapToResponse);
 
             }
-            List<ItemResponse> list = itemRepo.findAll(Sort.by("itemGroup").descending())
+            List<ItemResponse> list = itemRepo.findAll(Sort.by("itemGroup.name").descending())
                     .stream()
                     .map(this::mapToResponse)
                     .toList();
@@ -180,29 +181,139 @@ public class ItemService {
         return itemResponse;
     }
 
+    public ItemDTO getSelectedItem(String itemCode) {
+
+        Item item = itemRepo.findByItemCode(itemCode)
+                .orElseThrow(() -> new RuntimeException("Item not found: " + itemCode));
+
+        ItemDTO itemDto = new ItemDTO();
+
+        itemDto.setItemCode(item.getItemCode());
+        itemDto.setItemName(item.getItemName());
+        itemDto.setItemDescription(item.getItemDescription());
+        itemDto.setActive(item.getActive());
+        itemDto.setMaintainReorder(item.getMaintainReorder());
+        itemDto.setMinimumLevel(item.getMinimumLevel());
+        itemDto.setReorderQuantity(item.getReorderQuantity());
+
+        return itemDto;
+    }
+
     public Item updateItem(String itemCode, ItemDTO itemDTO) {
+
         Item existingItem = itemRepo.findByItemCode(itemCode)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+                .orElseThrow(() -> new RuntimeException("Item not found: " + itemCode));
 
-        // 2. update allowed fields only
-        existingItem.setItemCode(itemDTO.getItemCode());
-        existingItem.setItemName(itemDTO.getItemName());
-        existingItem.setItemDescription(itemDTO.getItemDescription());
-        existingItem.setActive(itemDTO.getActive());
-        existingItem.setMaintainReorder(itemDTO.getMaintainReorder());
-        existingItem.setReorderQuantity(itemDTO.getReorderQuantity());
-        existingItem.setMinimumLevel(itemDTO.getMinimumLevel());
+        // update item code only if provided
+        if (itemDTO.getItemCode() != null && !itemDTO.getItemCode().isBlank()) {
+            existingItem.setItemCode(itemDTO.getItemCode());
+        }
 
-        // 3. save
+        if (itemDTO.getItemName() != null) {
+            existingItem.setItemName(itemDTO.getItemName());
+        }
+
+        if (itemDTO.getItemDescription() != null) {
+            existingItem.setItemDescription(itemDTO.getItemDescription());
+        }
+
+        if (itemDTO.getActive() != null) {
+            existingItem.setActive(itemDTO.getActive());
+        }
+
+        if (itemDTO.getMaintainReorder() != null) {
+            existingItem.setMaintainReorder(itemDTO.getMaintainReorder());
+        }
+
+        if (itemDTO.getReorderQuantity() != null) {
+            existingItem.setReorderQuantity(itemDTO.getReorderQuantity());
+        }
+
+        if (itemDTO.getMinimumLevel() != null) {
+            existingItem.setMinimumLevel(itemDTO.getMinimumLevel());
+        }
+
         return itemRepo.save(existingItem);
     }
 
-    public void deleteItem(String itemCode) {
-        Item item = itemRepo.findByItemCode(itemCode)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+    //for now used frontend filtering
+    public Page<ItemResponse> getItemsByGroup(String groupCode, int page, String sortField, String sortOrder) {
 
-        itemRepo.delete(item);
+        String sortProperty = "itemCode";
+
+        if ("name".equalsIgnoreCase(sortField)) {
+            sortProperty = "itemName";
+        } else if ("code".equalsIgnoreCase(sortField)) {
+            sortProperty = "itemCode";
+        } else if ("group".equalsIgnoreCase(sortField)) {
+            sortProperty = "itemGroup.name";
+        }
+
+        Sort.Direction direction =
+                "DESC".equalsIgnoreCase(sortOrder)
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        PageRequest pageable = PageRequest.of(
+                page,
+                5,
+                Sort.by(direction, sortProperty)
+        );
+
+        return itemRepo.findByItemGroup_Code(groupCode, pageable)
+                .map(this::mapToResponse);
     }
 
+    //here too, for now use frontend filtering
+    public Page<ItemResponse> getItemsByActiveStatus(Boolean active, int page, String sortField, String sortOrder) {
+
+        String sortProperty = "itemCode";
+
+        if ("name".equalsIgnoreCase(sortField)) {
+            sortProperty = "itemName";
+        } else if ("code".equalsIgnoreCase(sortField)) {
+            sortProperty = "itemCode";
+        } else if ("group".equalsIgnoreCase(sortField)) {
+            sortProperty = "itemGroup.name";
+        }
+
+        Sort.Direction direction =
+                "DESC".equalsIgnoreCase(sortOrder)
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        PageRequest pageable = PageRequest.of(
+                page,
+                5,
+                Sort.by(direction, sortProperty)
+        );
+
+        return itemRepo.findByActive(active, pageable)
+                .map(this::mapToResponse);
+    }
+
+
+    // =============================================
+    // UNPAGINATED ITEM SEARCH
+    // =============================================
+    public List<ItemResponseSearchByKeyword> searchItemsByKeyword(String keyword) {
+        List<Item> items = itemRepo.findByItemNameContainingIgnoreCaseOrItemCodeContainingIgnoreCaseOrItemDescriptionContainingIgnoreCase(
+                keyword, keyword, keyword
+        );
+        return items.stream().map(this::mapToSearchResponse).toList();
+    }
+
+    public List<ItemResponseSearchByKeyword> getAllItemsUnpaginated() {
+        List<Item> items = itemRepo.findAll();
+        return items.stream().map(this::mapToSearchResponse).toList();
+    }
+
+    private ItemResponseSearchByKeyword mapToSearchResponse(Item item) {
+        ItemResponseSearchByKeyword dto = new ItemResponseSearchByKeyword();
+        dto.setItemCode(item.getItemCode());
+        dto.setItemName(item.getItemName());
+        dto.setDescription(item.getItemDescription());
+        return dto;
+    }
 
 }

@@ -28,18 +28,20 @@ public class GRNService {
     private final ItemRepository itemRepository;
     private final StockService stockService;
     private final UserRepository userRepository;
+    private final BinCardService binCardService;
 
 
     public GRNService(GrnRepository grnRepository,
                       ItemRepository itemRepository,
                       StockService stockService,
-                      UserRepository userRepository
+                      UserRepository userRepository,
+                      BinCardService binCardService
                       ) {
         this.grnRepository = grnRepository;
         this.itemRepository = itemRepository;
         this.stockService = stockService;
         this.userRepository = userRepository;
-
+        this.binCardService = binCardService;
     }
 
     // =========================
@@ -172,14 +174,16 @@ public class GRNService {
         }
 
         for (GRNItem item : grn.getItems()) {
-            stockService.addStock(
+            Stock stock = stockService.addStock(
                     item.getItem(),
                     grn.getLocation(),
                     grn.getGrnId(),
                     ReferenceType.GRN,
+                    item,
                     item.getQuantity(),
                     item.getUnitPrice()
             );
+            binCardService.createBinCardFromGRN(grn, item, stock);
         }
 
         grn.setStatus(Status.APPROVED);
@@ -212,7 +216,7 @@ public class GRNService {
     // =========================
     // SEARCH
     // =========================
-    public List<GRN> search(
+    public List<GRNResponseDTO> search(
             Location location,
             Status status,
             String keyword,
@@ -293,14 +297,12 @@ public class GRNService {
                 .sorted((a, b) -> b.getGrnId().compareTo(a.getGrnId()))
                 .toList();
 
-        return list;
+        return list.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
-    public GRNResponseDTO getById(Long id) {
-
-        GRN grn = grnRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("GRN not found"));
-
+    public GRNResponseDTO mapToResponseDTO(GRN grn) {
         GRNResponseDTO dto = new GRNResponseDTO();
 
         dto.setGrnId(grn.getGrnId());
@@ -310,14 +312,13 @@ public class GRNService {
                 ? Location.valueOf(grn.getLocation().name())
                 : null);
 
-
         dto.setSupplier(grn.getSupplier() != null
                 ? grn.getSupplier().name()
                 : null);
 
         dto.setGrnDate(grn.getGrnDate());
         dto.setTotalValue(grn.getTotalValue());
-        dto.setStatus(grn.getStatus().name());
+        dto.setStatus(grn.getStatus() != null ? grn.getStatus().name() : null);
 
         dto.setCreatedBy(grn.getCreatedBy() != null
                 ? grn.getCreatedBy().getUsername()
@@ -326,31 +327,39 @@ public class GRNService {
         dto.setApprovedBy(grn.getApprovedBy() != null
                 ? grn.getApprovedBy().getUsername()
                 : null);
+        dto.setApprovedAt(grn.getApprovedAt());
         dto.setComment(grn.getComment());
 
         List<GRNItemResponseDTO> itemList = new ArrayList<>();
 
-        for (GRNItem gi : grn.getItems()) {
+        if (grn.getItems() != null) {
+            for (GRNItem gi : grn.getItems()) {
+                GRNItemResponseDTO itemDto = new GRNItemResponseDTO();
 
-            GRNItemResponseDTO itemDto = new GRNItemResponseDTO();
+                itemDto.setGrnItemId(gi.getGrnItemId());
+                itemDto.setItemCode(gi.getItem().getItemCode());
 
-            itemDto.setGrnItemId(gi.getGrnItemId());
-            itemDto.setItemCode(gi.getItem().getItemCode());
+                itemDto.setItemName(
+                        gi.getItem().getItemName() != null
+                                ? gi.getItem().getItemName()
+                                : gi.getItem().getItemCode()
+                );
 
+                itemDto.setQuantity(gi.getQuantity());
+                itemDto.setUnitPrice(gi.getUnitPrice());
 
-            itemDto.setItemName(
-                    gi.getItem().getItemName() != null
-                            ? gi.getItem().getItemName()
-                            : gi.getItem().getItemCode()
-            );
-
-            itemDto.setQuantity(gi.getQuantity());
-            itemDto.setUnitPrice(gi.getUnitPrice());
-
-            itemList.add(itemDto);
+                itemList.add(itemDto);
+            }
         }
 
         dto.setItems(itemList);
 
         return dto;
-    }}
+    }
+
+    public GRNResponseDTO getById(Long id) {
+        GRN grn = grnRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("GRN not found"));
+        return mapToResponseDTO(grn);
+    }
+}

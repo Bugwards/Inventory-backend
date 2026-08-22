@@ -3,6 +3,7 @@ import com.example.inventoryAuth.DTO.ItemGroupDTO;
 import com.example.inventoryAuth.DTO.ItemGroupResponse;
 import com.example.inventoryAuth.Entity.ItemGroup;
 import com.example.inventoryAuth.Repository.ItemGroupRepository;
+import com.example.inventoryAuth.Repository.ItemRepository;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,9 @@ import java.util.List;
 public class ItemGroupService {
     @Autowired
     ItemGroupRepository itemGroupRepo;
+
+    @Autowired
+    ItemRepository itemRepo;
 
     public ItemGroup create(ItemGroup itemGroup) {
 
@@ -49,47 +53,43 @@ public class ItemGroupService {
     }
 
     public Object getGroupSortByGroupName(Integer page,String sortBy) {
+        if(sortBy.equalsIgnoreCase("ASC"))
+        {   if(page!=null ){
+            PageRequest pageable = PageRequest.of(
+                    page,
+                    5,
+                    Sort.by("name").ascending()
+            );
+            return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
+        }
+            List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").ascending())
+                    .stream()
+                    .map(this::mapToItemGroupResponse)
+                    .toList();
 
-        if (sortBy.equals("Asc")) {
-            if (page != null) {
+            return list;
+        }
+        else{
+            if(page!=null ){
+                PageRequest pageable = PageRequest.of(
+                        page,
+                        5,
+                        Sort.by("name").descending()
+                );
+                return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
+            }
+            List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").descending())
+                    .stream()
+                    .map(this::mapToItemGroupResponse)
+                    .toList();
 
-                        PageRequest pageable = PageRequest.of(
-                                page,
-                                5,
-                                Sort.by("name").ascending()
-                        );
-                        return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
-                    }
-
-                    List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").ascending())
-                            .stream()
-                            .map(this::mapToItemGroupResponse)
-                            .toList();
-
-                    return list;
-                } else {
-                    if (page != null) {
-                        PageRequest pageable = PageRequest.of(
-                                page,
-                                5,
-                                Sort.by("name").descending()
-                        );
-                        return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
-                    }
-                    List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("name").descending())
-                            .stream()
-                            .map(this::mapToItemGroupResponse)
-                            .toList();
-
-                    return list;
-                }
-
-
+            return list;
         }
 
+    }
 
     public Object getGroupSortByGroupCode(Integer page,String sortBy) {
-        if(sortBy.equals("Asc"))
+        if(sortBy.equalsIgnoreCase("ASC"))
         {if(page!=null){
             PageRequest pageable = PageRequest.of(
                     page,
@@ -98,14 +98,12 @@ public class ItemGroupService {
             );
             return itemGroupRepo.findAll(pageable).map(this::mapToItemGroupResponse);
         }
-
             List<ItemGroupResponse> list = itemGroupRepo.findAll(Sort.by("code").ascending())
                     .stream()
                     .map(this::mapToItemGroupResponse)
                     .toList();
 
             return list;
-
         }
         else{
             if(page!=null){
@@ -126,6 +124,18 @@ public class ItemGroupService {
 
     }
 
+    public ItemGroupDTO getSelectedGroup(String code) {
+        ItemGroup itemGroup = itemGroupRepo.findByCode(code).orElseThrow(()->new RuntimeException("Group not found: "+ code));
+
+        ItemGroupDTO itemGroupDTO = new ItemGroupDTO();
+
+        itemGroupDTO.setName(itemGroup.getName());
+        itemGroupDTO.setDescription(itemGroup.getDescription());
+        itemGroupDTO.setGlAccount(itemGroup.getGlAccount());
+        itemGroupDTO.setMaintainReorder(itemGroup.getMaintainReorder());
+
+        return itemGroupDTO;
+    }
 
     public ItemGroup updateItemGroup(String code, ItemGroupDTO groupDTO) {
         ItemGroup existingGroup = itemGroupRepo.findByCode(code)
@@ -152,9 +162,12 @@ public class ItemGroupService {
         }
         itemGroupResponse.setMaintainReorder(itemGroup.getMaintainReorder());
         itemGroupResponse.setGlAccount(itemGroup.getGlAccount());
+        Long count = itemRepo.countByItemGroup_Code(itemGroup.getCode());
+        itemGroupResponse.setItemCount(count);
 
         return itemGroupResponse;
     }
+
 
 
 }

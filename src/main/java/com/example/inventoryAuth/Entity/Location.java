@@ -6,7 +6,6 @@ public enum Location {
     KANDY,
     GALLE,
     GAMPAHA,
-    ANURADHAPURA
-
+    ANURADHAPURA,
 }
 

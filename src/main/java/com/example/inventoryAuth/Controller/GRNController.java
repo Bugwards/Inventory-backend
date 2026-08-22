@@ -65,7 +65,7 @@ public class GRNController {
     //search
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public List<GRN> search(
+    public List<GRNResponseDTO> search(
             @RequestParam(required = false) Location location,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) String keyword,
@@ -80,5 +80,5 @@ public class GRNController {
                 dateFilter,
                 fromDate,
                 toDate);
-            }
-        }
+    }
+}

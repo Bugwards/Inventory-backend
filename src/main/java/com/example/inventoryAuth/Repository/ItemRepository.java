@@ -14,4 +14,20 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
     Optional<Item> findByItemCode(String itemCode);
     List<Item> findByItemNameContainingIgnoreCase(String itemName);
     Page<Item> findByItemNameContainingIgnoreCase(String itemName, Pageable pageable);
+    Long countByItemGroup_Code(String code);
+
+    List<Item> findByItemNameContainingIgnoreCaseOrItemCodeContainingIgnoreCaseOrItemDescriptionContainingIgnoreCase(
+            String itemName,
+            String itemCode,
+            String description
+    );
+
+    Page<Item> findByItemGroup_Code(String groupCode, Pageable pageable);
+
+    Page<Item> findByActive(Boolean active, Pageable pageable);
+
+    List<Item> findByActive(Boolean active);
+
+    long countByActive(Boolean active);
+
 }

@@ -43,5 +43,56 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     }
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    public User updateUserProfile(
+            String currentUsername,
+            String newUsername,
+            String email,
+            String phone
+
+    ) {
+
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found"));
+
+        user.setUsername(newUsername);
+        user.setEmail(email);
+        user.setPhone(phone);
+
+
+        return userRepository.save(user);
+    }
+
+    public void changePassword(
+            String username,
+            String currentPassword,
+            String newPassword
+    ) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(
+                currentPassword,
+                user.getPassword()
+        )) {
+            throw new IllegalArgumentException(
+                    "Current password is incorrect"
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(newPassword)
+        );
+
+        userRepository.save(user);
+    }
+
 
 }

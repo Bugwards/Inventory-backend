@@ -10,4 +10,5 @@ public class ItemGroupResponse {
     private String description;
     private Boolean maintainReorder;
     private String glAccount;
+    private Long itemCount;
 }

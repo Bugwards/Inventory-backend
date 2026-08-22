@@ -32,11 +32,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String email;
 
+    @Column
+    private String phone;
+
+    @Column(name = "profile_picture", columnDefinition = "BYTEA")
+    private byte[] profilePicture;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @Enumerated(EnumType.STRING)
     private Location location;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

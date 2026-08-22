@@ -1,11 +1,12 @@
 package com.example.inventoryAuth.Entity;
 
-
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -21,7 +22,7 @@ public class Item {
 
     private String itemName;
 
-    private String itemGroupName;//remove this
+    private String itemGroupName;// remove this
 
     @Column(nullable = true)
     private String itemDescription;
@@ -37,8 +38,11 @@ public class Item {
     private Integer minimumLevel;
 
     @ManyToOne
-    @JoinColumn(name = "item_group_id" , nullable = false)
-    @JsonIgnore
+    @JoinColumn(name = "item_group_id", nullable = false)
     private ItemGroup itemGroup;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "item")
+    private List<GRNItem> grnItems = new ArrayList<>();
 
 }
