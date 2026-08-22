@@ -137,6 +137,19 @@ public class ItemGroupService {
         return itemGroupDTO;
     }
 
+    public ItemGroupDTO getSelectedGroup(String code) {
+        ItemGroup itemGroup = itemGroupRepo.findByCode(code).orElseThrow(()->new RuntimeException("Group not found: "+ code));
+
+        ItemGroupDTO itemGroupDTO = new ItemGroupDTO();
+
+        itemGroupDTO.setName(itemGroup.getName());
+        itemGroupDTO.setDescription(itemGroup.getDescription());
+        itemGroupDTO.setGlAccount(itemGroup.getGlAccount());
+        itemGroupDTO.setMaintainReorder(itemGroup.getMaintainReorder());
+
+        return itemGroupDTO;
+    }
+
     public ItemGroup updateItemGroup(String code, ItemGroupDTO groupDTO) {
         ItemGroup existingGroup = itemGroupRepo.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Item Group not found"));
@@ -150,6 +163,9 @@ public class ItemGroupService {
         // 3. save
         return itemGroupRepo.save(existingGroup);
     }
+
+
+
 
     private ItemGroupResponse mapToItemGroupResponse(ItemGroup itemGroup) {
 
