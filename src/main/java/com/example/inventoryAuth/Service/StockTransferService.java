@@ -5,21 +5,17 @@ import com.example.inventoryAuth.DTO.ItemResponseSearchByKeyword;
 import com.example.inventoryAuth.DTO.StockTransferDto.*;
 import com.example.inventoryAuth.Entity.*;
 import com.example.inventoryAuth.Repository.*;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
 public class  StockTransferService {
@@ -66,6 +62,21 @@ public class  StockTransferService {
         return user.getLocation();
     }
 
+    //get currently logged in nusername for appear in approval and cansellation
+    private String getCurrentUsername() {
+
+        Object principal = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        }
+
+        return principal.toString();
+    }
+
     @Transactional
     //save stockTransfer
     public void stockTransferSave(StockTransferRequest stockTransferRequestDetails){
@@ -88,6 +99,7 @@ public class  StockTransferService {
                 StockTransferItem stockTransferItem = new StockTransferItem();
                 GRN grn = grnRepository.findByGrnNumber(grnDto.getGrnNumber());//to find grn
                 GRNItem grnItem= grnItemRepository.findByGrnAndItem(grn,item).orElse(null);//to find grnitem from grn
+                grnItem.setGrnWiseTransferredQuantity(grnDto.getTransferQty());
                 Stock stock = stockRepository.findByItemAndGrnItem(item, grnItem);
                 if(stock == null){
                     throw new RuntimeException("Stock not found for item + GRN");
@@ -99,7 +111,7 @@ public class  StockTransferService {
                     );
                 }
                 //setting stocktransferItem data
-                stockTransferItem.setTransferQty(grnDto.getTransferQty());
+                stockTransferItem.setTransferQty(itemDto.getTransferQty());
                 stockTransferItem.setStockTransfer(stockTransfer);
                 stockTransferItem.setItem(item);
                 stockTransferItem.setGrnItem(grnItem);
@@ -146,7 +158,7 @@ public class  StockTransferService {
     public SelectedItemResponse getItemDetails(String itemCode){
         Item selectedItem=itemRepository.findByItemCode(itemCode).orElseThrow(()->new RuntimeException("Item not found"));
         SelectedItemResponse itemResponse = new SelectedItemResponse();
-        itemResponse.setItemGroupName(selectedItem.getItemGroup().getName());
+        itemResponse.setItemGroupName(selectedItem.getItemGroup() != null ? selectedItem.getItemGroup().getName() : "");
         itemResponse.setItemCode(selectedItem.getItemCode());
         itemResponse.setItemName(selectedItem.getItemName());
         itemResponse.setItemDescription(selectedItem.getItemDescription());
@@ -154,20 +166,25 @@ public class  StockTransferService {
         //get grn list
         List<SelectedItemGrnResponse> responseGrnList = new ArrayList<>();
 
+        List<Stock> stock = stockRepository.findByItemId(selectedItem.getId());
 
-        List<Stock> stock =stockRepository.findByItemId(selectedItem.getId());
+        if (stock != null) {
+            for(Stock stockItem: stock){
+                SelectedItemGrnResponse grnWiseItemDetails = new SelectedItemGrnResponse();
+                if (stockItem.getGrnItem() != null && stockItem.getGrnItem().getGrn() != null) {
+                    grnWiseItemDetails.setGrnNumber(stockItem.getGrnItem().getGrn().getGrnNumber());
+                    grnWiseItemDetails.setGrnDate(stockItem.getGrnItem().getGrn().getGrnDate());
+                } else {
+                    grnWiseItemDetails.setGrnNumber("GRN-N/A");
+                    grnWiseItemDetails.setGrnDate(null);
+                }
+                grnWiseItemDetails.setUnit(selectedItem.getUnitOfMeasurement());
+                grnWiseItemDetails.setCurrentQuantity(Long.valueOf(stockItem.getCurrentQty()));
+                grnWiseItemDetails.setPricePerUnit(stockItem.getUnitPrice());
 
-        for(Stock stockItem: stock){
-            //
-            SelectedItemGrnResponse grnWiseItemDetails = new SelectedItemGrnResponse();
-            grnWiseItemDetails.setGrnNumber(stockItem.getGrnItem().getGrn().getGrnNumber());
-            grnWiseItemDetails.setGrnDate(stockItem.getGrnItem().getGrn().getGrnDate());
-            grnWiseItemDetails.setUnit(stockItem.getItem().getUnitOfMeasurement());
-            grnWiseItemDetails.setCurrentQuantity(Long.valueOf(stockItem.getCurrentQty()));
-            grnWiseItemDetails.setPricePerUnit(stockItem.getUnitPrice());
-
-            //add data for responseGrnList
-            responseGrnList.add(grnWiseItemDetails);
+                //add data for responseGrnList
+                responseGrnList.add(grnWiseItemDetails);
+            }
         }
 
         itemResponse.setGrnWiseItemDetails(responseGrnList);
@@ -210,6 +227,12 @@ public class  StockTransferService {
         transferResponse.setRequestRef(stockTransfer.getRequestRef());
         transferResponse.setComment(stockTransfer.getComment());
 
+        transferResponse.setApprovedBy(stockTransfer.getApprovedBy());
+        transferResponse.setApprovedAt(stockTransfer.getApprovedAt());
+
+        transferResponse.setCancelledBy(stockTransfer.getCancelledBy());
+        transferResponse.setCancelledAt(stockTransfer.getCancelledAt());
+
         List<TransferredItemResponse> TransferredItemDtoList = new ArrayList<>();
         List<StockTransferItem> StockTransferItemList = stockTransfer.getStockTransferItem();
 
@@ -231,7 +254,7 @@ public class  StockTransferService {
                 //to get currentQ we have to access stock
                 Stock stock = stockRepository.findByItemAndGrnItem(stockTransferItem.getItem(),grnItem);
                 grnItemDto.setCurrentQuantity(stock.getCurrentQty());
-                grnItemDto.setTransferQty(stockTransferItem.getTransferQty());
+                grnItemDto.setTransferQty(stockTransferItem.getGrnItem().getGrnWiseTransferredQuantity());
 
                 grnItemTransferredDtoList.add(grnItemDto);
 
@@ -265,6 +288,7 @@ public class  StockTransferService {
                 StockTransferItem stockTransferItem = new StockTransferItem();
                 GRN grn = grnRepository.findByGrnNumber(grnDto.getGrnNumber());
                 GRNItem grnItem= grnItemRepository.findByGrnAndItem(grn,item).orElse(null);
+                grnItem.setGrnWiseTransferredQuantity(grnDto.getTransferQty());
                 Stock stock = stockRepository.findByItemAndGrnItem(item, grnItem);
                 if(stock == null){
                     throw new RuntimeException("Stock not found for item + GRN");
@@ -275,7 +299,7 @@ public class  StockTransferService {
                                     stock.getGrnItem().getGrn().getGrnNumber()
                     );
                 }
-                stockTransferItem.setTransferQty(grnDto.getTransferQty());
+                stockTransferItem.setTransferQty(itemDto.getTransferQty());
                 stockTransferItem.setStockTransfer(stockTransfer);
                 stockTransferItem.setItem(item);
                 stockTransferItem.setGrnItem(grnItem);
@@ -295,7 +319,13 @@ public class  StockTransferService {
     public void approveStockTransfer(String stockTransferNo){
         StockTransfer stockTransfer=stockTransferRepository.findByTransferNo(stockTransferNo).orElse(null);
         stockTransfer.setStatus(Status.APPROVED);
-        List<StockTransferItem> StocktransferItemList=stockTransfer.getStockTransferItem();
+        stockTransfer.setApprovedDate(java.time.LocalDate.now());
+        stockTransfer.setApprovedBy(getCurrentUsername());
+        stockTransfer.setApprovedAt(LocalDateTime.now());
+
+
+        List<StockTransferItem> StocktransferItemList = stockTransfer.getStockTransferItem();
+
         for(StockTransferItem stockTItem:StocktransferItemList){
             Stock stock=stockRepository.findByItemAndGrnItem(stockTItem.getItem(),stockTItem.getGrnItem());
             stock.setActualQty(stock.getActualQty()-stockTItem.getTransferQty());
@@ -314,6 +344,9 @@ public class  StockTransferService {
     public void cancelStockTransfer(String stockTransferNo){
         StockTransfer stockTransfer=stockTransferRepository.findByTransferNo(stockTransferNo).orElse(null);
         stockTransfer.setStatus(Status.CANCELLED);
+        stockTransfer.setCancelledBy(getCurrentUsername());
+        stockTransfer.setCancelledAt(LocalDateTime.now());
+
 
         List<StockTransferItem> StocktransferItemList=stockTransfer.getStockTransferItem();
         for(StockTransferItem StockTItem:StocktransferItemList){
