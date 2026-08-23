@@ -1,0 +1,28 @@
+-------------------------------------------------------------------------------
+Test set: com.example.inventoryAuth.Service.BinCardServiceTest
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.361 s <<< FAILURE! -- in com.example.inventoryAuth.Service.BinCardServiceTest
+com.example.inventoryAuth.Service.BinCardServiceTest.getDashboardAnalytics_shouldCalculateTotalMovement -- Time elapsed: 0.921 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "java.lang.Comparable.compareTo(Object)" because "c2" is null
+	at java.base/java.util.Collections$ReverseComparator.compare(Collections.java:5679)
+	at java.base/java.util.Collections$ReverseComparator.compare(Collections.java:5669)
+	at java.base/java.util.Comparator.lambda$comparing$ea9a8b3a$1(Comparator.java:440)
+	at java.base/java.util.Comparator.lambda$thenComparing$36697e65$1(Comparator.java:221)
+	at java.base/java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.base/java.util.TimSort.sort(TimSort.java:220)
+	at java.base/java.util.Arrays.sort(Arrays.java:1304)
+	at java.base/java.util.ArrayList.sortRange(ArrayList.java:1817)
+	at java.base/java.util.ArrayList.sort(ArrayList.java:1810)
+	at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:392)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:589)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:574)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:635)
+	at java.base/java.util.stream.AbstractPipeline.evaluateToArrayNode(AbstractPipeline.java:291)
+	at java.base/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:652)
+	at java.base/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:658)
+	at java.base/java.util.stream.ReferencePipeline.toList(ReferencePipeline.java:663)
+	at com.example.inventoryAuth.Service.BinCardService.getDashboardAnalytics(BinCardService.java:671)
+	at com.example.inventoryAuth.Service.BinCardServiceTest.getDashboardAnalytics_shouldCalculateTotalMovement(BinCardServiceTest.java:782)
+

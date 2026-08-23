@@ -1,0 +1,9 @@
+-------------------------------------------------------------------------------
+Test set: com.example.inventoryAuth.Service.StockAdjustmentServiceTest
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.142 s <<< FAILURE! -- in com.example.inventoryAuth.Service.StockAdjustmentServiceTest
+com.example.inventoryAuth.Service.StockAdjustmentServiceTest.save_success -- Time elapsed: 0.008 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.example.inventoryAuth.Service.BinCardService.createBinCardFromStockAdjustment(com.example.inventoryAuth.Entity.StockAdjustment, com.example.inventoryAuth.Entity.StockAdjustmentItem, com.example.inventoryAuth.Entity.Stock)" because "this.binCardService" is null
+	at com.example.inventoryAuth.Service.StockAdjustmentService.save(StockAdjustmentService.java:154)
+	at com.example.inventoryAuth.Service.StockAdjustmentServiceTest.save_success(StockAdjustmentServiceTest.java:205)
+

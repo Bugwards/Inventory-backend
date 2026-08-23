@@ -1,0 +1,9 @@
+-------------------------------------------------------------------------------
+Test set: com.example.inventoryAuth.Service.GRNServiceTest
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 1.335 s <<< FAILURE! -- in com.example.inventoryAuth.Service.GRNServiceTest
+com.example.inventoryAuth.Service.GRNServiceTest.approveGRN_success -- Time elapsed: 0.101 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "com.example.inventoryAuth.Service.BinCardService.createBinCardFromGRN(com.example.inventoryAuth.Entity.GRN, com.example.inventoryAuth.Entity.GRNItem, com.example.inventoryAuth.Entity.Stock)" because "this.binCardService" is null
+	at com.example.inventoryAuth.Service.GRNService.approve(GRNService.java:195)
+	at com.example.inventoryAuth.Service.GRNServiceTest.approveGRN_success(GRNServiceTest.java:594)
+

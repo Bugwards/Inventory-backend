@@ -1,0 +1,9 @@
+-------------------------------------------------------------------------------
+Test set: com.example.inventoryAuth.Service.StockTransferReceiptServiceTest
+-------------------------------------------------------------------------------
+Tests run: 19, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.459 s <<< FAILURE! -- in com.example.inventoryAuth.Service.StockTransferReceiptServiceTest
+com.example.inventoryAuth.Service.StockTransferReceiptServiceTest.cancelStockReceipt_success -- Time elapsed: 0.005 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "org.springframework.security.core.Authentication.getPrincipal()" because the return value of "org.springframework.security.core.context.SecurityContext.getAuthentication()" is null
+	at com.example.inventoryAuth.Service.StockTransferReceiptService.cancelStockReceipt(StockTransferReceiptService.java:393)
+	at com.example.inventoryAuth.Service.StockTransferReceiptServiceTest.cancelStockReceipt_success(StockTransferReceiptServiceTest.java:882)
+

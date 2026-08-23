@@ -1,0 +1,5 @@
+com\example\inventoryAuth\InventoryAuthApplicationTests.class
+com\example\inventoryAuth\Service\ItemServiceTest.class
+org\example\itemmaster\ItemMasterApplicationTests.class
+com\example\inventoryAuth\Service\BinCardServiceTest.class
+com\example\inventoryAuth\Service\ItemGroupServiceTest.class
