@@ -3,6 +3,7 @@ package com.example.inventoryAuth.Controller;
 
 import com.example.inventoryAuth.DTO.ItemDTO;
 import com.example.inventoryAuth.DTO.ItemResponse;
+import com.example.inventoryAuth.DTO.ItemResponseSearchByKeyword;
 import com.example.inventoryAuth.Entity.Item;
 import com.example.inventoryAuth.Service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -21,7 +24,6 @@ public class ItemController {
     @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
     @PostMapping("createItem")
     public Item create(@RequestBody Item item) {
-
         return itemService.create(item);
     }
 
@@ -79,4 +81,18 @@ public class ItemController {
         return ResponseEntity.ok(updated);
     }
 
+    // =============================================
+    // UNPAGINATED ITEM SEARCH (for GRN, Opening Stock, Stock Adjustment item pickers)
+    // =============================================
+    @GetMapping("/search")
+    public List<ItemResponseSearchByKeyword> searchItemsByKeyword(@RequestParam String keyword) {
+        return itemService.searchItemsByKeyword(keyword);
+    }
+
+    @GetMapping("/all-items")
+    public List<ItemResponseSearchByKeyword> getAllItemsUnpaginated() {
+        return itemService.getAllItemsUnpaginated();
+    }
+
 }
+

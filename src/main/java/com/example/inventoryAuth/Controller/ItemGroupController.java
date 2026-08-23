@@ -18,8 +18,8 @@ public class ItemGroupController {
     @Autowired
     ItemGroupService itemGroupService;
 
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
-    @PostMapping("createGroup")
+    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_STORE_STAFF')")
+    @PostMapping("/createGroup")
     public ItemGroup create(@RequestBody ItemGroup itemGroup) {
         return itemGroupService.create(itemGroup);
     }
@@ -71,6 +71,7 @@ public class ItemGroupController {
         ItemGroup updated = itemGroupService.updateItemGroup(code, groupDTO);
         return ResponseEntity.ok(updated);
     }
+
 
 }
 
