@@ -2,7 +2,6 @@ package com.example.inventoryAuth.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 @Entity
@@ -37,8 +36,4 @@ public class GRNItem {
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
-
-    private Integer grnWiseTransferredQuantity;
-
-    private Integer grnWiseReceivedQuantity;
 }

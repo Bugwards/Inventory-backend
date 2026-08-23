@@ -1,6 +1,5 @@
 package com.example.inventoryAuth.Service;
 
-
 import com.example.inventoryAuth.DTO.StockReceiptDto.*;
 import com.example.inventoryAuth.DTO.StockTransferDto.StockTransferListResponse;
 import com.example.inventoryAuth.DTO.StockTransferDto.TransferredGrnResponse;
@@ -14,12 +13,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 
 public class StockTransferReceiptService {
-
 
     @Autowired
     StockTransferRepository stockTransferRepository;
@@ -62,29 +63,46 @@ public class StockTransferReceiptService {
 
         return user.getLocation();
     }
+    private String getCurrentUsername() {
+
+        Object principal = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        }
+
+        return principal.toString();
+    }
 
     public void saveStockReceipt(StockReceiptRequest stockReceipt) {
         StockReceipt stockTransferReceipt = new StockReceipt();
         stockTransferReceipt.setDate(stockReceipt.getDate());
         stockTransferReceipt.setFromLocation(stockReceipt.getFromLocation());
-        stockTransferReceipt.setReceiptLocation(stockReceipt.getReciptLocation());//*        stockTransferReceipt.setTransferNo(stockReceipt.getTransferNo());
+        stockTransferReceipt.setReceiptLocation(stockReceipt.getReceiptLocation());// *
+                                                                                  // stockTransferReceipt.setTransferNo(stockReceipt.getTransferNo());
         stockTransferReceipt.setComment(stockReceipt.getComment());
-        StockTransfer stockTransfer = stockTransferRepository.findByTransferNo(stockReceipt.getTransferNo()).orElse(null);
+        StockTransfer stockTransfer = stockTransferRepository.findByTransferNo(stockReceipt.getTransferNo())
+                .orElse(null);
         stockTransfer.setStatus(Status.TRANSFERRED);
-        stockTransferReceipt.setStockTransfer(stockTransfer);//save related stransfer with sreceipt
+        stockTransferReceipt.setStockTransfer(stockTransfer);// save related stransfer with sreceipt
 
         List<StockReceiptItemsRequest> stockReceiptItemList = stockReceipt.getStockReceiptItems();
         for (StockReceiptItemsRequest stockReceiptItem : stockReceiptItemList) {
 
-            Item item = itemRepository.findByItemCode(stockReceiptItem.getItemCode()).orElseThrow(() -> new RuntimeException("Record Not Found"));//got the item
+            Item item = itemRepository.findByItemCode(stockReceiptItem.getItemCode())
+                    .orElseThrow(() -> new RuntimeException("Record Not Found"));// got the item
 
             List<StockReceiptItemGrnRequest> stockReceiptItemGrnList = stockReceiptItem.getStockReceiptItemGrn();
             for (StockReceiptItemGrnRequest stockReceiptItemGrn : stockReceiptItemGrnList) {
                 StockReceiptItem stockTransferReceiptItem = new StockReceiptItem();
-                stockTransferReceiptItem.setItem(item);//added item to StockTransferReceiptItem
+                stockTransferReceiptItem.setItem(item);// added item to StockTransferReceiptItem
 
                 GRN grn = grnRepository.findByGrnNumber(stockReceiptItemGrn.getGrnNo());
-                GRNItem grnItem = grnItemRepository.findByGrnAndItem(grn, item).orElseThrow(() -> new RuntimeException("Record Not Found"));
+                GRNItem grnItem = grnItemRepository.findByGrnAndItem(grn, item)
+                        .orElseThrow(() -> new RuntimeException("Record Not Found"));
                 stockTransferReceiptItem.setGrnItem(grnItem);
                 stockTransferReceiptItem.setItem(item);
                 stockTransferReceiptItem.setReceivedQty(stockReceiptItemGrn.getReceivedQty());
@@ -99,10 +117,10 @@ public class StockTransferReceiptService {
         stockReceiptRepository.save(stockTransferReceipt);
     }
 
-    //get items after click on 'populate items' button
+    // get items after click on 'populate items' button
     public List<TransferredItemResponse> populateItems(String transferNo) {
-        StockTransfer stockTransfer = stockTransferRepository.findByTransferNo(transferNo.trim()).orElseThrow(() -> new RuntimeException("Stock transfer not found: " + transferNo));
-
+        StockTransfer stockTransfer = stockTransferRepository.findByTransferNo(transferNo.trim())
+                .orElseThrow(() -> new RuntimeException("Stock transfer not found: " + transferNo));
 
         List<TransferredItemResponse> transferredItemDtoList = new ArrayList<>();
 
@@ -135,9 +153,12 @@ public class StockTransferReceiptService {
         return transferredItemDtoList;
 
     }
-    //get stock transfer list
-    public List<StockTransferListResponse> getStockTransferList(int page, Location fromLocation, Location receiptLocation) {
-        List<StockTransfer> stockTransferList = stockTransferRepository.findByFromLocationAndToLocationAndStatus(fromLocation, receiptLocation, Status.APPROVED, PageRequest.of(page, 5));
+
+    // get stock transfer list
+    public List<StockTransferListResponse> getStockTransferList(int page, Location fromLocation,
+            Location receiptLocation) {
+        List<StockTransfer> stockTransferList = stockTransferRepository.findByFromLocationAndToLocationAndStatus(
+                fromLocation, receiptLocation, Status.APPROVED, PageRequest.of(page, 5));
         List<StockTransferListResponse> stockTransferListResponse = new ArrayList<>();
         for (StockTransfer stockTransfer : stockTransferList) {
             StockTransferListResponse sTransferResponse = new StockTransferListResponse();
@@ -152,8 +173,7 @@ public class StockTransferReceiptService {
         return stockTransferListResponse;
     }
 
-
-    //get StockTransferReceipt list
+    // get StockTransferReceipt list
     public List<StockReceiptListResponse> getStockTransferReceiptList(int page) {
         Page<StockReceipt> stockTransferReceipts = stockReceiptRepository.findAll(PageRequest.of(page, 5));
         List<StockReceiptListResponse> stockTransferReceiptList = new ArrayList<>();
@@ -162,33 +182,51 @@ public class StockTransferReceiptService {
             StockReceiptListResponse receiptResponse = new StockReceiptListResponse();
             receiptResponse.setReceiptNo(receipt.getReceiptNo());
             receiptResponse.setReceiptDate(receipt.getDate());
-            receiptResponse.setTransferNo(receipt.getTransferNo());
+            receiptResponse.setTransferNo(receipt.getStockTransfer().getTransferNo());// ^
             receiptResponse.setFromLocation(receipt.getFromLocation());
-            receiptResponse.setReceiptLocation(receipt.getReceiptLocation());
+            receiptResponse.setReceiptLocation(receipt.getReceiptLocation() != null
+                    ? receipt.getReceiptLocation() : receipt.getStockTransfer().getToLocation());
             receiptResponse.setStatus(receipt.getStatus());
+
             receiptResponse.setApprovedDate(receipt.getApprovedDate());
+            receiptResponse.setApprovedBy(receipt.getApprovedBy());
+            receiptResponse.setApprovedAt(receipt.getApprovedAt());
+
+            receiptResponse.setCancelledBy(receipt.getCancelledBy());
+            receiptResponse.setCancelledAt(receipt.getCancelledAt());
+            receiptResponse.setCancelReason(receipt.getCancelReason());
 
             stockTransferReceiptList.add(receiptResponse);
         }
         return stockTransferReceiptList;
     }
 
-    //get a stockreceiptRecord clicking on str via str list
+    // get a stockreceiptRecord clicking on str via str list
     public StockReceiptRequest getSelectedStockReceipt(String receiptNo) {
-        StockReceipt stockReceipt = stockReceiptRepository.findByReceiptNo(receiptNo);
+        Optional<StockReceipt> stockReceipt = Optional.ofNullable(stockReceiptRepository.findByReceiptNo(receiptNo));
 
         StockReceiptRequest stockReceiptRequest = new StockReceiptRequest();
-        stockReceiptRequest.setDate(stockReceipt.getDate());
-        stockReceiptRequest.setFromLocation(stockReceipt.getFromLocation());
-        stockReceiptRequest.setReciptLocation(stockReceipt.getReceiptLocation());
-        stockReceiptRequest.setTransferNo(stockReceipt.getTransferNo());
-        stockReceiptRequest.setComment(stockReceipt.getComment());
+        stockReceiptRequest.setDate(stockReceipt.get().getDate());
+        stockReceiptRequest.setFromLocation(stockReceipt.get().getFromLocation());
+        stockReceiptRequest.setReceiptLocation(stockReceipt.get().getReceiptLocation());
+        stockReceiptRequest.setTransferNo(stockReceipt.get().getStockTransfer().getTransferNo());// ^
+        stockReceiptRequest.setComment(stockReceipt.get().getComment());
 
+
+        stockReceiptRequest.setStatus(stockReceipt.get().getStatus());
+
+        stockReceiptRequest.setApprovedBy(stockReceipt.get().getApprovedBy());
+        stockReceiptRequest.setApprovedAt(stockReceipt.get().getApprovedAt());
+
+
+        stockReceiptRequest.setCancelledBy(stockReceipt.get().getCancelledBy());
+        stockReceiptRequest.setCancelledAt(stockReceipt.get().getCancelledAt());
+        stockReceiptRequest.setCancelReason(stockReceipt.get().getCancelReason());
         Integer totalReceivedQuantity = 0;
         Long totalTransferedQuantity = 0L;
 
         List<StockReceiptItemsRequest> ReceiptItemRequestList = new ArrayList<>();
-        List<StockReceiptItem> ReceiptItemList = stockReceipt.getStockReceiptItem();
+        List<StockReceiptItem> ReceiptItemList = stockReceipt.get().getStockReceiptItem();
         for (StockReceiptItem receiptItem : ReceiptItemList) {
             StockReceiptItemsRequest itemRequest = new StockReceiptItemsRequest();
             itemRequest.setItemGroup(receiptItem.getItem().getItemGroup().getName());
@@ -198,23 +236,24 @@ public class StockTransferReceiptService {
             itemRequest.setUnitOfMeasurement(receiptItem.getItem().getUnitOfMeasurement());
 
             List<StockReceiptItemGrnRequest> StockReceiptItemGrnRequestList = new ArrayList<>();
-            List<GRNItem> grnItemList = receiptItem.getItem().getGrnItems();//get grnItemList
+            List<GRNItem> grnItemList = receiptItem.getItem().getGrnItems();// get grnItemList
             for (GRNItem grnItem : grnItemList) {
                 StockReceiptItemGrnRequest itemGrnRequest = new StockReceiptItemGrnRequest();
                 itemGrnRequest.setGrnNo(grnItem.getGrn().getGrnNumber());
                 itemGrnRequest.setGrnDate(grnItem.getGrn().getGrnDate());
-                StockTransferItem stockTransferItem = stockTransferItemRepository.findByStockTransferAndItem(stockReceipt.getStockTransfer(), receiptItem.getItem());
+                StockTransferItem stockTransferItem = stockTransferItemRepository
+                        .findByStockTransferAndItem(stockReceipt.get().getStockTransfer(), receiptItem.getItem());
                 itemGrnRequest.setTransferredQty(Long.valueOf(stockTransferItem.getTransferQty()));
                 itemGrnRequest.setReceivedQty(receiptItem.getReceivedQty());
 
-                totalReceivedQuantity = totalReceivedQuantity + itemGrnRequest.getReceivedQty();
+                totalReceivedQuantity = Math.toIntExact(totalReceivedQuantity + itemGrnRequest.getReceivedQty());
                 totalTransferedQuantity = totalTransferedQuantity + itemGrnRequest.getTransferredQty();
 
                 StockReceiptItemGrnRequestList.add(itemGrnRequest);
             }
             itemRequest.setStockReceiptItemGrn(StockReceiptItemGrnRequestList);
             itemRequest.setTransferredQty(totalTransferedQuantity);
-            itemRequest.setReceivedQty(totalReceivedQuantity);
+            itemRequest.setReceivedQty(Long.valueOf(totalReceivedQuantity));
             ReceiptItemRequestList.add(itemRequest);
         }
         stockReceiptRequest.setStockReceiptItems(ReceiptItemRequestList);
@@ -222,7 +261,7 @@ public class StockTransferReceiptService {
 
     }
 
-    //update stockReceipt
+    // update stockReceipt
     public void updateStockReceipt(String receiptNo, StockReceiptRequest stockReceiptRequest) {
         StockReceipt stockReceipt = stockReceiptRepository.findByReceiptNo(receiptNo);
         if (stockReceipt.getStatus() == Status.APPROVED || stockReceipt.getStatus() == Status.CANCELLED) {
@@ -233,11 +272,11 @@ public class StockTransferReceiptService {
         stockReceipt.setTransferNo(stockReceiptRequest.getTransferNo());
         stockReceipt.setComment(stockReceiptRequest.getComment());
 
-
         List<StockReceiptItemsRequest> stockReceiptItemList = stockReceiptRequest.getStockReceiptItems();
         for (StockReceiptItemsRequest stockReceiptItem : stockReceiptItemList) {
 
-            Item item = itemRepository.findByItemCode(stockReceiptItem.getItemCode()).orElseThrow(() -> new RuntimeException("Record Not Found"));
+            Item item = itemRepository.findByItemCode(stockReceiptItem.getItemCode())
+                    .orElseThrow(() -> new RuntimeException("Record Not Found"));
 
             List<StockReceiptItemGrnRequest> stockReceiptItemGrnList = stockReceiptItem.getStockReceiptItemGrn();
             for (StockReceiptItemGrnRequest stockReceiptItemGrn : stockReceiptItemGrnList) {
@@ -245,8 +284,9 @@ public class StockTransferReceiptService {
                 ReceiptItem.setItem(item);
 
                 GRN grn = grnRepository.findByGrnNumber(stockReceiptItemGrn.getGrnNo());
-                GRNItem grnItem = grnItemRepository.findByGrnAndItem(grn, item).orElseThrow(() -> new RuntimeException("Record Not Found"));
-//                grnItem.setGrnWiseReceivedQuantity(stockReceiptItemGrn.getReceivedQty());
+                GRNItem grnItem = grnItemRepository.findByGrnAndItem(grn, item)
+                        .orElseThrow(() -> new RuntimeException("Record Not Found"));
+                // grnItem.setGrnWiseReceivedQuantity(stockReceiptItemGrn.getReceivedQty());
                 ReceiptItem.setGrnItem(grnItem);
                 ReceiptItem.setItem(item);
                 ReceiptItem.setReceivedQty(stockReceiptItemGrn.getReceivedQty());
@@ -258,32 +298,112 @@ public class StockTransferReceiptService {
         stockReceiptRepository.save(stockReceipt);
     }
 
-    //approve stock receipt
-    public void approveStockReceipt(String receiptNo) {
+    // approve stock receipt
+    /*public void approveStockReceipt(String receiptNo) {
         StockReceipt stockReceipt = stockReceiptRepository.findByReceiptNo(receiptNo);
         stockReceipt.setStatus(Status.APPROVED);
+        stockReceipt.setApprovedDate(LocalDate.now());// +
 
         List<StockReceiptItem> stockReceiptItemList = stockReceipt.getStockReceiptItem();
         for (StockReceiptItem stockReceiptItem : stockReceiptItemList) {
-            Stock stock = stockRepository.findByItemAndGrnItem(stockReceiptItem.getItem(), stockReceiptItem.getGrnItem());
-            stock.setCurrentQty(stock.getCurrentQty() + stockReceiptItem.getReceivedQty());
-            stock.setActualQty(stock.getActualQty() + stockReceiptItem.getReceivedQty());
+            Stock stock = stockRepository.findByItemAndGrnItem(stockReceiptItem.getItem(),
+                    stockReceiptItem.getGrnItem());
+            stock.setCurrentQty(Math.toIntExact(stock.getCurrentQty() + stockReceiptItem.getReceivedQty()));
+            stock.setActualQty(Math.toIntExact(stock.getActualQty() + stockReceiptItem.getReceivedQty()));
         }
         stockReceiptRepository.save(stockReceipt);
+    }*/
+    public void approveStockReceipt(String receiptNo) {
+
+        StockReceipt stockReceipt =
+                stockReceiptRepository.findByReceiptNo(receiptNo);
+
+        // 1. Approve Stock Receipt
+        stockReceipt.setStatus(Status.APPROVED);
+        stockReceipt.setApprovedDate(LocalDate.now());
+
+        Object principal = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String username;
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+
+        stockReceipt.setApprovedBy(username);
+        stockReceipt.setApprovedAt(java.time.LocalDateTime.now());
+
+        // 2. Get the Stock Transfer connected to this receipt
+        StockTransfer stockTransfer = stockReceipt.getStockTransfer();
+
+        if (stockTransfer == null) {
+            throw new RuntimeException(
+                    "No Stock Transfer found for receipt: " + receiptNo
+            );
+        }
+
+        // 3. Change STOCK TRANSFER status
+        stockTransfer.setStatus(Status.TRANSFERRED);
+
+        // 4. Update stock
+        List<StockReceiptItem> stockReceiptItemList =
+                stockReceipt.getStockReceiptItem();
+
+        for (StockReceiptItem stockReceiptItem : stockReceiptItemList) {
+
+            Stock stock = stockRepository.findByItemAndGrnItem(
+                    stockReceiptItem.getItem(),
+                    stockReceiptItem.getGrnItem()
+            );
+
+            stock.setCurrentQty(Math.toIntExact(stock.getCurrentQty() + stockReceiptItem.getReceivedQty()));
+            stock.setActualQty(Math.toIntExact(stock.getActualQty() + stockReceiptItem.getReceivedQty()));
+        }
+
+        // 5. Save Stock Receipt
+        stockReceiptRepository.save(stockReceipt);
+
+        // 6. Save Stock Transfer
+        stockTransferRepository.save(stockTransfer);
     }
 
-    //cansel stock receipt
-    public void cancelStockReceipt(String receiptNo) {
+    // cansel stock receipt
+    public void cancelStockReceipt(String receiptNo,String cancelReason) {
         StockReceipt stockReceipt = stockReceiptRepository.findByReceiptNo(receiptNo);
         stockReceipt.setStatus(Status.CANCELLED);
+        stockReceipt.setCancelReason(cancelReason);
+        Object principal = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String username;
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+
+
+        stockReceipt.setCancelledBy(username);
+        stockReceipt.setCancelledAt(
+                java.time.LocalDateTime.now()
+        );
         stockReceiptRepository.save(stockReceipt);
 
     }
 
-    //cansel msg reason
+    // cansel msg reason
     public void getCancelMsg(String receiptNo, String canselReason) {
         StockReceipt stockReceipt = stockReceiptRepository.findByReceiptNo(receiptNo);
         stockReceipt.setCancelReason(canselReason);
+
         stockReceiptRepository.save(stockReceipt);
 
     }

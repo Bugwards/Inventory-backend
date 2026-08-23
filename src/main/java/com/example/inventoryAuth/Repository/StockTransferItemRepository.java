@@ -7,12 +7,14 @@ import com.example.inventoryAuth.Entity.StockTransferItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface StockTransferItemRepository extends JpaRepository<StockTransferItem,Long> {
     List<StockTransferItem> findByStockTransfer(StockTransfer stockTransfer);
 
+    List<StockTransferItem> findByItemAndStockTransfer_TransferDateAfter(Item item, LocalDate localDate);
+
     StockTransferItem findByStockTransferAndItem(StockTransfer stockTransfer, Item item);
 }
-

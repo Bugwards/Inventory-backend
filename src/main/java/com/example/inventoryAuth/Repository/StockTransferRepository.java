@@ -18,4 +18,12 @@ public interface StockTransferRepository extends JpaRepository<StockTransfer, St
 
        List<StockTransfer> findByFromLocationAndToLocationAndStatus(Location fromLocation, Location receiptLocation, Status status , PageRequest pageRequest );
 
+       List<StockTransfer> findByFromLocationAndStatus(Location fromLocation, Status status, PageRequest pageRequest);
+
+       List<StockTransfer> findByToLocationAndStatus(Location toLocation, Status status, PageRequest pageRequest);
+
+       List<StockTransfer> findByStatus(Status status, PageRequest pageRequest);
+
+       long countByStatus(Status status);
+
 }

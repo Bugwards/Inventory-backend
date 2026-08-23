@@ -22,6 +22,4 @@ public interface GrnRepository extends JpaRepository<GRN, Long> {
     List<GRN> findByCreatedById(Long id);
 
     List<GRN> findByApprovedById(Long id);
-
-    GRN findByGrnNumber(String GrnNumber);
 }
