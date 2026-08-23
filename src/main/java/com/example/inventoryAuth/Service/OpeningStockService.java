@@ -274,7 +274,7 @@ public class OpeningStockService {
 
         dto.setOpeningStockId(os.getOpeningStockId());
         dto.setEntryNo(os.getEntryNo());
-
+        dto.setLocation(os.getLocation());
         dto.setOpeningDate(os.getOpeningDate());
         dto.setTotalValue(os.getTotalValue());
         dto.setStatus(os.getStatus().name());
