@@ -24,7 +24,7 @@ public class StockTransferController {
     // 1
     // to catch and pass stock transfer data
     public String sTransfer(@RequestBody StockTransferRequest stockTransferRequest) {
-        System.out.println("🔥🔥🔥 CONTROLLER REACHED 🔥🔥🔥");
+        System.out.println("CONTROLLER REACHED ");
         stockTransferservice.stockTransferSave(stockTransferRequest);
         return "success";
     }
