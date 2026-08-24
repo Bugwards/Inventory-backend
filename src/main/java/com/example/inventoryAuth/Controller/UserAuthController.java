@@ -37,8 +37,12 @@ public class UserAuthController {
 
     @PostMapping("/register")
     public String register(@RequestBody UserDetailsRequest user) {
-        customUserDetailsService.saveUser(user);
-        return "User Added Successfully";
+        try {
+            customUserDetailsService.saveUser(user);
+            return "User Added Successfully";
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
     }
 
     @PostMapping("/login")
@@ -50,7 +54,7 @@ public class UserAuthController {
 
             return jwtUtil.generateToken(authRequest.getUsername(),
                     userRepository.findByUsername(authRequest.getUsername())
-                            .orElseThrow(() -> new UsernameNotFoundException("User not found")).getRole());
+                            .orElseThrow(() -> new UsernameNotFoundException("User not found")).getRole().getCode());
 
         } catch (Exception e) {
             return "invalid Credential";

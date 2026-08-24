@@ -43,7 +43,8 @@ public class StockAdjustment {
     private LocalDateTime createdAt;
     private LocalDateTime approvedAt;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     @ManyToOne

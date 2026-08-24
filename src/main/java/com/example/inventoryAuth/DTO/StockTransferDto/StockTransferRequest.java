@@ -1,8 +1,6 @@
 package com.example.inventoryAuth.DTO.StockTransferDto;
 
 
-import com.example.inventoryAuth.Entity.Location;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +17,7 @@ import java.util.List;
 public class StockTransferRequest {
     private LocalDate date;
 
-    private Location toLocation;
+    private Long toLocationId;
 
     private String requestRef;
 

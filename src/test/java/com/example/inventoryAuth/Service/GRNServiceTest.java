@@ -6,6 +6,8 @@ import com.example.inventoryAuth.DTO.GRNResponseDTO;
 import com.example.inventoryAuth.Entity.*;
 import com.example.inventoryAuth.Repository.GrnRepository;
 import com.example.inventoryAuth.Repository.ItemRepository;
+import com.example.inventoryAuth.Repository.LocationRepository;
+import com.example.inventoryAuth.Repository.SupplierRepository;
 import com.example.inventoryAuth.Repository.UserRepository;
 
 import org.junit.jupiter.api.AfterEach;
@@ -52,6 +54,12 @@ class GRNServiceTest {
 
     @Mock
     private BinCardServiceTest binCardService;
+
+    @Mock
+    private SupplierRepository supplierRepository;
+
+    @Mock
+    private LocationRepository locationRepository;
 
 
     // =========================================================
@@ -123,6 +131,22 @@ class GRNServiceTest {
 
 
     // =========================================================
+    // HELPER - LOCATION ENTITY
+    // =========================================================
+
+    private Location createLocation(Long id, String code) {
+        Location location = new Location();
+        location.setId(id);
+        location.setCode(code);
+        location.setName(code);
+        location.setActive(true);
+        return location;
+    }
+
+    private final Location kandyLocation = createLocation(1L, "KANDY");
+
+
+    // =========================================================
     // HELPER - VALID GRN DTO
     // =========================================================
 
@@ -132,7 +156,7 @@ class GRNServiceTest {
 
         dto.setPoNumber("PO-0001");
 
-        dto.setSupplier(supplier);
+        dto.setSupplierId(1L);
 
         dto.setGrnDate(LocalDate.now());
 
@@ -160,7 +184,7 @@ class GRNServiceTest {
         grn.setGrnNumber("GRN-00001");
         grn.setPoNumber("PO-0001");
         grn.setSupplier(supplier);
-        grn.setLocation(Location.KANDY);
+        grn.setLocation(kandyLocation);
         grn.setGrnDate(LocalDate.now());
         grn.setStatus(Status.UNAPPROVED);
         grn.setCreatedBy(currentUser);
@@ -203,7 +227,10 @@ class GRNServiceTest {
         GRNDTO dto = createValidGRNDTO();
 
         when(currentUser.getLocation())
-                .thenReturn(Location.KANDY);
+                .thenReturn(kandyLocation);
+
+        when(supplierRepository.findById(1L))
+                .thenReturn(Optional.of(supplier));
 
         when(itemRepository.findByItemCode("ITEM-001"))
                 .thenReturn(Optional.of(item));
@@ -249,7 +276,7 @@ class GRNServiceTest {
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.getLocation()
         );
 
@@ -327,7 +354,7 @@ class GRNServiceTest {
 
         GRNDTO dto = createValidGRNDTO();
 
-        dto.setSupplier(null);
+        dto.setSupplierId(null);
 
 
         // Act + Assert
@@ -391,6 +418,9 @@ class GRNServiceTest {
 
         GRNDTO dto = createValidGRNDTO();
 
+        when(supplierRepository.findById(1L))
+                .thenReturn(Optional.of(supplier));
+
         when(itemRepository.findByItemCode("ITEM-001"))
                 .thenReturn(Optional.empty());
 
@@ -433,6 +463,9 @@ class GRNServiceTest {
 
         when(grnRepository.findById(grnId))
                 .thenReturn(Optional.of(existingGRN));
+
+        when(supplierRepository.findById(1L))
+                .thenReturn(Optional.of(supplier));
 
         when(itemRepository.findByItemCode("ITEM-001"))
                 .thenReturn(Optional.of(item));
@@ -582,7 +615,7 @@ class GRNServiceTest {
         verify(stockService)
                 .addStock(
                         item,
-                        Location.KANDY,
+                        kandyLocation,
                         grn.getGrnId(),
                         ReferenceType.GRN,
                         grnItem,
@@ -909,7 +942,7 @@ class GRNServiceTest {
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.getLocation()
         );
 

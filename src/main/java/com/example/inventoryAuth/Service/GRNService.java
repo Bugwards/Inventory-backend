@@ -9,11 +9,11 @@ import com.example.inventoryAuth.DTO.GRNResponseDTO;
 import com.example.inventoryAuth.Entity.*;
 import com.example.inventoryAuth.Repository.GrnRepository;
 import com.example.inventoryAuth.Repository.ItemRepository;
-import com.example.inventoryAuth.Repository.UserRepository;
+import com.example.inventoryAuth.Repository.LocationRepository;
+import com.example.inventoryAuth.Repository.SupplierRepository;
+import com.example.inventoryAuth.Security.CurrentUserProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 
 import java.time.LocalDate;
@@ -27,49 +27,38 @@ public class GRNService {
     private final GrnRepository grnRepository;
     private final ItemRepository itemRepository;
     private final StockService stockService;
-    private final UserRepository userRepository;
     private final BinCardService binCardService;
+    private final SupplierRepository supplierRepository;
+    private final LocationRepository locationRepository;
+    private final CurrentUserProvider currentUserProvider;
+    private final AuditLogService auditLogService;
 
 
     public GRNService(GrnRepository grnRepository,
                       ItemRepository itemRepository,
                       StockService stockService,
-                      UserRepository userRepository,
-                      BinCardService binCardService
+                      BinCardService binCardService,
+                      SupplierRepository supplierRepository,
+                      LocationRepository locationRepository,
+                      CurrentUserProvider currentUserProvider,
+                      AuditLogService auditLogService
                       ) {
         this.grnRepository = grnRepository;
         this.itemRepository = itemRepository;
         this.stockService = stockService;
-        this.userRepository = userRepository;
         this.binCardService = binCardService;
+        this.supplierRepository = supplierRepository;
+        this.locationRepository = locationRepository;
+        this.currentUserProvider = currentUserProvider;
+        this.auditLogService = auditLogService;
     }
-
-    // =========================
-    // 🔐 CURRENT USER
-    // =========================
-    private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-
-        String username;
-
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
 
     // =========================
     //  CREATE / UPDATE
     // =========================
     @Transactional
     public GRN save(GRNDTO dto, Long id) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserProvider.getCurrentUser();
 
         GRN grn;
 
@@ -100,7 +89,7 @@ public class GRNService {
             throw new RuntimeException("PO Number required");
         }
 
-        if (dto.getSupplier() == null) {
+        if (dto.getSupplierId() == null) {
             throw new RuntimeException("Supplier required");
         }
 
@@ -108,10 +97,11 @@ public class GRNService {
             throw new RuntimeException("Items required");
         }
 
-
+        Supplier supplier = supplierRepository.findById(dto.getSupplierId())
+                .orElseThrow(() -> new RuntimeException("Supplier not found"));
 
         grn.setPoNumber(dto.getPoNumber());
-        grn.setSupplier(dto.getSupplier());
+        grn.setSupplier(supplier);
 
         // =================
         // ITEM HANDLING
@@ -155,7 +145,17 @@ public class GRNService {
         // FINAL NUMBER
         saved.setGrnNumber("GRN-" + String.format("%05d", saved.getGrnId()));
 
-        return grnRepository.save(saved);
+        GRN finalSaved = grnRepository.save(saved);
+
+        if (id == null) {
+            auditLogService.log(
+                    currentUser.getUsername(),
+                    finalSaved.getGrnNumber(),
+                    "Created GRN " + finalSaved.getGrnNumber() + " from supplier " + finalSaved.getSupplier()
+            );
+        }
+
+        return finalSaved;
     }
 
 
@@ -164,7 +164,7 @@ public class GRNService {
     // =========================
     @Transactional
     public GRN approve(Long id) {
-        User currentUser = getCurrentUser();
+        User currentUser = currentUserProvider.getCurrentUser();
 
         GRN grn = grnRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("GRN not found"));
@@ -190,7 +190,15 @@ public class GRNService {
         grn.setApprovedBy(currentUser);
         grn.setApprovedAt(LocalDateTime.now());
 
-        return grnRepository.save(grn);
+        GRN approved = grnRepository.save(grn);
+
+        auditLogService.log(
+                currentUser.getUsername(),
+                approved.getGrnNumber(),
+                "Approved GRN " + approved.getGrnNumber()
+        );
+
+        return approved;
     }
 
     // =========================
@@ -217,7 +225,7 @@ public class GRNService {
     // SEARCH
     // =========================
     public List<GRNResponseDTO> search(
-            Location location,
+            String locationCode,
             Status status,
             String keyword,
             String dateFilter,
@@ -234,9 +242,12 @@ public class GRNService {
                     .toList();
         }
 
-        if (location != null) {
+        if (locationCode != null && !locationCode.isBlank()) {
+            Long locationId = locationRepository.findByCode(locationCode)
+                    .map(Location::getId)
+                    .orElse(null);
             list = list.stream()
-                    .filter(g -> g.getLocation() != null && g.getLocation().equals(location))
+                    .filter(g -> g.getLocation() != null && g.getLocation().getId().equals(locationId))
                     .toList();
         }
 
@@ -287,7 +298,7 @@ public class GRNService {
                                     g.getGrnNumber().toLowerCase().contains(keyword.toLowerCase()))
                                     ||
                                     (g.getSupplier() != null &&
-                                            g.getSupplier().getDisplayName().toLowerCase().contains(keyword.toLowerCase()))
+                                            g.getSupplier().getName().toLowerCase().contains(keyword.toLowerCase()))
                     )
                     .toList();
         }
@@ -308,12 +319,10 @@ public class GRNService {
         dto.setGrnId(grn.getGrnId());
         dto.setGrnNumber(grn.getGrnNumber());
         dto.setPoNumber(grn.getPoNumber());
-        dto.setLocation(grn.getLocation() != null
-                ? Location.valueOf(grn.getLocation().name())
-                : null);
+        dto.setLocation(grn.getLocation());
 
         dto.setSupplier(grn.getSupplier() != null
-                ? grn.getSupplier().name()
+                ? grn.getSupplier().getName()
                 : null);
 
         dto.setGrnDate(grn.getGrnDate());

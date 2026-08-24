@@ -44,6 +44,9 @@ public class  StockTransferService {
     @Autowired
     BinCardService binCardService;
 
+    @Autowired
+    LocationRepository locationRepository;
+
     public Location getCurrentUserLocation() {
         Object principal = SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -83,7 +86,8 @@ public class  StockTransferService {
 
         StockTransfer stockTransfer = new StockTransfer();
         stockTransfer.setTransferDate(stockTransferRequestDetails.getDate());
-        stockTransfer.setToLocation(stockTransferRequestDetails.getToLocation());
+        stockTransfer.setToLocation(locationRepository.findById(stockTransferRequestDetails.getToLocationId())
+                .orElseThrow(() -> new RuntimeException("Location not found")));
         stockTransfer.setRequestRef(stockTransferRequestDetails.getRequestRef());
         stockTransfer.setComment(stockTransferRequestDetails.getComment());
         stockTransfer.setFromLocation(getCurrentUserLocation());
@@ -223,7 +227,7 @@ public class  StockTransferService {
         }
         StockTransferRequest transferResponse = new StockTransferRequest();
         transferResponse.setDate(stockTransfer.getTransferDate());
-        transferResponse.setToLocation(stockTransfer.getToLocation());
+        transferResponse.setToLocationId(stockTransfer.getToLocation() != null ? stockTransfer.getToLocation().getId() : null);
         transferResponse.setRequestRef(stockTransfer.getRequestRef());
         transferResponse.setComment(stockTransfer.getComment());
 
@@ -248,11 +252,18 @@ public class  StockTransferService {
             List<TransferredGrnResponse>  grnItemTransferredDtoList = new ArrayList<>();
             List<GRNItem> grnItemList = stockTransferItem.getItem().getGrnItems();
             for(GRNItem grnItem:grnItemList){
+                //to get currentQ we have to access stock
+                Stock stock = stockRepository.findByItemAndGrnItem(stockTransferItem.getItem(),grnItem);
+
+                if (stock == null) {
+                    // No stock was ever received against this GRN item, so there's
+                    // nothing to report for it here - skip rather than NPE.
+                    continue;
+                }
+
                 TransferredGrnResponse grnItemDto= new TransferredGrnResponse();
                 grnItemDto.setGrnNumber(grnItem.getGrn().getGrnNumber());
                 grnItemDto.setGrnDate(grnItem.getGrn().getGrnDate());
-                //to get currentQ we have to access stock
-                Stock stock = stockRepository.findByItemAndGrnItem(stockTransferItem.getItem(),grnItem);
                 grnItemDto.setCurrentQuantity(stock.getCurrentQty());
                 grnItemDto.setTransferQty(stockTransferItem.getGrnItem().getGrnWiseTransferredQuantity());
 
@@ -276,10 +287,12 @@ public class  StockTransferService {
             throw new RuntimeException("You Can't Update this stock transfer record");
         }
         stockTransfer.setTransferDate(stockTransferRequestDetails.getDate());
-        stockTransfer.setToLocation(stockTransferRequestDetails.getToLocation());
+        stockTransfer.setToLocation(locationRepository.findById(stockTransferRequestDetails.getToLocationId())
+                .orElseThrow(() -> new RuntimeException("Location not found")));
         stockTransfer.setRequestRef(stockTransferRequestDetails.getRequestRef());
         stockTransfer.setComment(stockTransferRequestDetails.getComment());
-        stockTransfer.setFromLocation(Location.HEAD_OFFICE);
+        stockTransfer.setFromLocation(locationRepository.findByCode("HEAD_OFFICE")
+                .orElseThrow(() -> new RuntimeException("Location not found")));
 
         for(TransferredItemResponse itemDto:stockTransferRequestDetails.getItems()){
             Item item = itemRepository.findByItemCode(itemDto.getItemCode()).orElseThrow(()->new RuntimeException("item code not found"));

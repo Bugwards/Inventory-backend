@@ -1,9 +1,6 @@
 package com.example.inventoryAuth.DTO;
 
 
-import com.example.inventoryAuth.Entity.Department;
-import com.example.inventoryAuth.Entity.Location;
-import com.example.inventoryAuth.Entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,13 +16,9 @@ public class UserDetailsRequest {
 
     private String email;
 
-    private Location location;
+    private Long locationId;
 
-    private Role role;
-
-    private Department department;
-
-    private String name;
+    private Long roleId;
 
 
 }

@@ -1,5 +1,6 @@
 package com.example.inventoryAuth.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -38,16 +40,20 @@ public class User implements UserDetails {
     @Column(name = "profile_picture", columnDefinition = "BYTEA")
     private byte[] profilePicture;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
     private Role role;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
     private Location location;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return role.getPermissions().stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getCode()))
+                .collect(java.util.stream.Collectors.toSet());
     }
 
     @Override

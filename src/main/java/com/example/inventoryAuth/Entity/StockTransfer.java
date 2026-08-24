@@ -28,12 +28,12 @@ public class StockTransfer {
     @Column(nullable = false)
     private LocalDate transferDate;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "from_location_id", nullable = false)
     private Location fromLocation;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "to_location_id", nullable = false)
     private Location toLocation;
 
     private String requestRef;

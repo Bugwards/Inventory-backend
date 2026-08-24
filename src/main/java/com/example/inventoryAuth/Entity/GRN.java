@@ -40,10 +40,12 @@ public class GRN {
     private LocalDateTime cancelledAt;
     private String cancelReason;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "supplier_id")
     private Supplier supplier;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     @ManyToOne

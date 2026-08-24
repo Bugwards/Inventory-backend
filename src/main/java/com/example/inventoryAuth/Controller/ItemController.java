@@ -21,7 +21,7 @@ public class ItemController {
     @Autowired
     ItemService itemService;
 
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('ITEM_MANAGE')")
     @PostMapping("createItem")
     public Item create(@RequestBody Item item) {
         return itemService.create(item);
@@ -74,7 +74,7 @@ public class ItemController {
         return itemService.getSelectedItem(itemCode);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_STORE_STAFF')")
+    @PreAuthorize("hasAuthority('ITEM_MANAGE')")
     @PutMapping("/{itemCode}")
     public ResponseEntity<Item> updateItem(@PathVariable String itemCode, @RequestBody ItemDTO itemDTO){
         Item updated = itemService.updateItem(itemCode , itemDTO);

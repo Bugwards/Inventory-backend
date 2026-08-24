@@ -1,6 +1,5 @@
 package com.example.inventoryAuth.DTO.StockReceiptDto;
 
-import com.example.inventoryAuth.Entity.Location;
 import com.example.inventoryAuth.Entity.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,8 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 public class StockReceiptRequest {
     private LocalDate date;
-    private Location fromLocation;
-    private Location receiptLocation;
+    private Long fromLocationId;
+    private Long receiptLocationId;
     private String transferNo;
     private String comment;
     private List<StockReceiptItemsRequest> stockReceiptItems;

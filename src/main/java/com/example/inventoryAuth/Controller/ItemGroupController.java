@@ -18,7 +18,7 @@ public class ItemGroupController {
     @Autowired
     ItemGroupService itemGroupService;
 
-    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_STORE_STAFF')")
+    @PreAuthorize("hasAuthority('ITEM_GROUP_MANAGE')")
     @PostMapping("/createGroup")
     public ItemGroup create(@RequestBody ItemGroup itemGroup) {
         return itemGroupService.create(itemGroup);
@@ -65,7 +65,7 @@ public class ItemGroupController {
         return itemGroupService.getSelectedGroup(code);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_STORE_STAFF')")
+    @PreAuthorize("hasAuthority('ITEM_GROUP_MANAGE')")
     @PutMapping("/{code}")
     public ResponseEntity<ItemGroup> updateItemGroup(@PathVariable String code, @RequestBody ItemGroupDTO groupDTO){
         ItemGroup updated = itemGroupService.updateItemGroup(code, groupDTO);

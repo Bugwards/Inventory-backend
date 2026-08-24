@@ -47,6 +47,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth->
                         auth
                                 .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers(org.springframework.http.HttpMethod.GET, "/roles/summary").permitAll()
+                                .requestMatchers(org.springframework.http.HttpMethod.GET, "/locations/active").permitAll()
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
@@ -79,7 +81,7 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         );
 
         configuration.setAllowedHeaders(

@@ -24,7 +24,8 @@ public class StockIssue {
 
     private String issueNo;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "current_location_id")
     private Location currentLocation;
 
     @Column(nullable = false)

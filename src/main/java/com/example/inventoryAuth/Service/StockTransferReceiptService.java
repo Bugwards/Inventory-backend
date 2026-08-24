@@ -46,6 +46,9 @@ public class StockTransferReceiptService {
     @Autowired
     StockTransferItemRepository stockTransferItemRepository;
 
+    @Autowired
+    LocationRepository locationRepository;
+
     public Location getCurrentUserLocation() {
         Object principal = SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -80,8 +83,10 @@ public class StockTransferReceiptService {
     public void saveStockReceipt(StockReceiptRequest stockReceipt) {
         StockReceipt stockTransferReceipt = new StockReceipt();
         stockTransferReceipt.setDate(stockReceipt.getDate());
-        stockTransferReceipt.setFromLocation(stockReceipt.getFromLocation());
-        stockTransferReceipt.setReceiptLocation(stockReceipt.getReceiptLocation());// *
+        stockTransferReceipt.setFromLocation(stockReceipt.getFromLocationId() != null
+                ? locationRepository.findById(stockReceipt.getFromLocationId()).orElse(null) : null);
+        stockTransferReceipt.setReceiptLocation(stockReceipt.getReceiptLocationId() != null
+                ? locationRepository.findById(stockReceipt.getReceiptLocationId()).orElse(null) : null);// *
                                                                                   // stockTransferReceipt.setTransferNo(stockReceipt.getTransferNo());
         stockTransferReceipt.setComment(stockReceipt.getComment());
         StockTransfer stockTransfer = stockTransferRepository.findByTransferNo(stockReceipt.getTransferNo())
@@ -155,8 +160,10 @@ public class StockTransferReceiptService {
     }
 
     // get stock transfer list
-    public List<StockTransferListResponse> getStockTransferList(int page, Location fromLocation,
-            Location receiptLocation) {
+    public List<StockTransferListResponse> getStockTransferList(int page, String fromLocationCode,
+            String receiptLocationCode) {
+        Location fromLocation = fromLocationCode != null ? locationRepository.findByCode(fromLocationCode).orElse(null) : null;
+        Location receiptLocation = receiptLocationCode != null ? locationRepository.findByCode(receiptLocationCode).orElse(null) : null;
         List<StockTransfer> stockTransferList = stockTransferRepository.findByFromLocationAndToLocationAndStatus(
                 fromLocation, receiptLocation, Status.APPROVED, PageRequest.of(page, 5));
         List<StockTransferListResponse> stockTransferListResponse = new ArrayList<>();
@@ -207,8 +214,10 @@ public class StockTransferReceiptService {
 
         StockReceiptRequest stockReceiptRequest = new StockReceiptRequest();
         stockReceiptRequest.setDate(stockReceipt.get().getDate());
-        stockReceiptRequest.setFromLocation(stockReceipt.get().getFromLocation());
-        stockReceiptRequest.setReceiptLocation(stockReceipt.get().getReceiptLocation());
+        stockReceiptRequest.setFromLocationId(stockReceipt.get().getFromLocation() != null
+                ? stockReceipt.get().getFromLocation().getId() : null);
+        stockReceiptRequest.setReceiptLocationId(stockReceipt.get().getReceiptLocation() != null
+                ? stockReceipt.get().getReceiptLocation().getId() : null);
         stockReceiptRequest.setTransferNo(stockReceipt.get().getStockTransfer().getTransferNo());// ^
         stockReceiptRequest.setComment(stockReceipt.get().getComment());
 
@@ -238,11 +247,19 @@ public class StockTransferReceiptService {
             List<StockReceiptItemGrnRequest> StockReceiptItemGrnRequestList = new ArrayList<>();
             List<GRNItem> grnItemList = receiptItem.getItem().getGrnItems();// get grnItemList
             for (GRNItem grnItem : grnItemList) {
+                StockTransferItem stockTransferItem = stockTransferItemRepository
+                        .findByStockTransferAndItem(stockReceipt.get().getStockTransfer(), receiptItem.getItem());
+
+                if (stockTransferItem == null) {
+                    // This GRN item wasn't part of the stock transfer behind this
+                    // receipt, so there's nothing to report for it here - skip
+                    // rather than NPE.
+                    continue;
+                }
+
                 StockReceiptItemGrnRequest itemGrnRequest = new StockReceiptItemGrnRequest();
                 itemGrnRequest.setGrnNo(grnItem.getGrn().getGrnNumber());
                 itemGrnRequest.setGrnDate(grnItem.getGrn().getGrnDate());
-                StockTransferItem stockTransferItem = stockTransferItemRepository
-                        .findByStockTransferAndItem(stockReceipt.get().getStockTransfer(), receiptItem.getItem());
                 itemGrnRequest.setTransferredQty(Long.valueOf(stockTransferItem.getTransferQty()));
                 itemGrnRequest.setReceivedQty(receiptItem.getReceivedQty());
 
@@ -268,7 +285,8 @@ public class StockTransferReceiptService {
             throw new RuntimeException("You Can't Update this stock transfer record");
         }
         stockReceipt.setDate(stockReceiptRequest.getDate());
-        stockReceipt.setFromLocation(stockReceiptRequest.getFromLocation());
+        stockReceipt.setFromLocation(stockReceiptRequest.getFromLocationId() != null
+                ? locationRepository.findById(stockReceiptRequest.getFromLocationId()).orElse(null) : null);
         stockReceipt.setTransferNo(stockReceiptRequest.getTransferNo());
         stockReceipt.setComment(stockReceiptRequest.getComment());
 

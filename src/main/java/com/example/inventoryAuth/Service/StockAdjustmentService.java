@@ -6,6 +6,7 @@ import com.example.inventoryAuth.DTO.StockAdjustmentItemDTO;
 import com.example.inventoryAuth.DTO.StockAdjustmentItemResponseDTO;
 import com.example.inventoryAuth.DTO.StockAdjustmentResponseDTO;
 import com.example.inventoryAuth.Entity.*;
+import com.example.inventoryAuth.Repository.LocationRepository;
 import com.example.inventoryAuth.Repository.StockAdjustmentRepository;
 import com.example.inventoryAuth.Repository.StockRepository;
 import com.example.inventoryAuth.Repository.UserRepository;
@@ -26,18 +27,21 @@ public class StockAdjustmentService {
     private final StockService stockService;
     private final UserRepository userRepository;
     private final BinCardService binCardService;
+    private final LocationRepository locationRepository;
 
     public StockAdjustmentService(StockAdjustmentRepository repository,
                                   StockRepository stockRepository,
                                   StockService stockService,
                                   UserRepository userRepository,
-                                  BinCardService binCardService
+                                  BinCardService binCardService,
+                                  LocationRepository locationRepository
     ) {
         this.repository = repository;
         this.stockRepository = stockRepository;
         this.stockService = stockService;
         this.userRepository = userRepository;
         this.binCardService = binCardService;
+        this.locationRepository = locationRepository;
     }
 
 
@@ -161,7 +165,7 @@ public class StockAdjustmentService {
     // SEARCH (UNCHANGED)
     // =========================
     public List<StockAdjustment> search(
-            Location location,
+            String locationCode,
             String keyword,
             String dateFilter,
             String fromDate,
@@ -170,9 +174,12 @@ public class StockAdjustmentService {
 
         List<StockAdjustment> list = repository.findAll();
 
-        if (location != null) {
+        if (locationCode != null && !locationCode.isBlank()) {
+            Long locationId = locationRepository.findByCode(locationCode)
+                    .map(Location::getId)
+                    .orElse(null);
             list = list.stream()
-                    .filter(a -> a.getLocation() == location)
+                    .filter(a -> a.getLocation() != null && a.getLocation().getId().equals(locationId))
                     .toList();
         }
 

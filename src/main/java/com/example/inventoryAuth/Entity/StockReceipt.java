@@ -23,10 +23,12 @@ public class StockReceipt {
 
     private LocalDate date;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "from_location_id")
     private Location fromLocation;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "receipt_location_id")
     private Location ReceiptLocation;
 
     private String comment;

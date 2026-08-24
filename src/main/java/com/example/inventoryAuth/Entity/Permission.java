@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "suppliers")
-public class Supplier {
+@Table(name = "permissions")
+public class Permission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,8 +18,8 @@ public class Supplier {
     private String code;
 
     @Column(nullable = false)
-    private String name;
+    private String description;
 
     @Column(nullable = false)
-    private Boolean active = true;
+    private String category;
 }

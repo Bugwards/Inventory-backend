@@ -34,13 +34,18 @@ public class Stock {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @ManyToOne
+    @JoinColumn(name = "grn_item_id", nullable = true)
+    private GRNItem grnItem;
 
 
 }
