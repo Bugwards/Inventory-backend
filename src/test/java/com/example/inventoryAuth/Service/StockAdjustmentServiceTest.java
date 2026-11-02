@@ -4,6 +4,7 @@ import com.example.inventoryAuth.DTO.StockAdjustmentDTO;
 import com.example.inventoryAuth.DTO.StockAdjustmentItemDTO;
 import com.example.inventoryAuth.DTO.StockAdjustmentResponseDTO;
 import com.example.inventoryAuth.Entity.*;
+import com.example.inventoryAuth.Repository.LocationRepository;
 import com.example.inventoryAuth.Repository.StockAdjustmentRepository;
 import com.example.inventoryAuth.Repository.StockRepository;
 import com.example.inventoryAuth.Repository.UserRepository;
@@ -66,8 +67,28 @@ class StockAdjustmentServiceTest {
     @Mock
     private Item item;
 
+    @Mock
+    private LocationRepository locationRepository;
+
     @InjectMocks
     private StockAdjustmentService service;
+
+
+    // =====================================================
+    // LOCATION ENTITY HELPER
+    // =====================================================
+
+    private Location createLocation(Long id, String code) {
+        Location location = new Location();
+        location.setId(id);
+        location.setCode(code);
+        location.setName(code);
+        location.setActive(true);
+        return location;
+    }
+
+    private final Location kandyLocation = createLocation(1L, "KANDY");
+    private final Location headOfficeLocation = createLocation(2L, "HEAD_OFFICE");
 
 
     // =====================================================
@@ -90,7 +111,7 @@ class StockAdjustmentServiceTest {
                 .thenReturn(Optional.of(currentUser));
 
         when(currentUser.getLocation())
-                .thenReturn(Location.KANDY);
+                .thenReturn(kandyLocation);
 
         SecurityContextHolder.setContext(securityContext);
     }
@@ -205,7 +226,7 @@ class StockAdjustmentServiceTest {
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.getLocation()
         );
 
@@ -376,7 +397,7 @@ class StockAdjustmentServiceTest {
 
         kandy.setAdjustmentId(1L);
         kandy.setAdjustmentNo("ADJ-00001");
-        kandy.setLocation(Location.KANDY);
+        kandy.setLocation(kandyLocation);
         kandy.setAdjustmentDate(LocalDate.now());
 
 
@@ -385,7 +406,7 @@ class StockAdjustmentServiceTest {
 
         colombo.setAdjustmentId(2L);
         colombo.setAdjustmentNo("ADJ-00002");
-        colombo.setLocation(Location.HEAD_OFFICE);
+        colombo.setLocation(headOfficeLocation);
         colombo.setAdjustmentDate(LocalDate.now());
 
 
@@ -394,10 +415,13 @@ class StockAdjustmentServiceTest {
                         List.of(kandy, colombo)
                 );
 
+        when(locationRepository.findByCode("KANDY"))
+                .thenReturn(Optional.of(kandyLocation));
+
 
         List<StockAdjustment> result =
                 service.search(
-                        Location.KANDY,
+                        "KANDY",
                         null,
                         null,
                         null,
@@ -411,7 +435,7 @@ class StockAdjustmentServiceTest {
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.get(0).getLocation()
         );
     }
@@ -429,7 +453,7 @@ class StockAdjustmentServiceTest {
 
         adjustment.setAdjustmentId(1L);
         adjustment.setAdjustmentNo("ADJ-00001");
-        adjustment.setLocation(Location.KANDY);
+        adjustment.setLocation(kandyLocation);
         adjustment.setAdjustmentDate(LocalDate.now());
 
 
@@ -474,7 +498,7 @@ class StockAdjustmentServiceTest {
         adjustment.setAdjustmentId(1L);
         adjustment.setAdjustmentNo("ADJ-00001");
         adjustment.setAdjustmentDate(LocalDate.now());
-        adjustment.setLocation(Location.KANDY);
+        adjustment.setLocation(kandyLocation);
         adjustment.setStatus(Status.APPROVED);
         adjustment.setReason("Stock correction");
         adjustment.setComment("Test");
@@ -513,7 +537,7 @@ class StockAdjustmentServiceTest {
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.getLocation()
         );
 

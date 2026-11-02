@@ -62,6 +62,9 @@ class StockTransferReceiptServiceTest {
     @Mock
     private StockTransferItemRepository stockTransferItemRepository;
 
+    @Mock
+    private LocationRepository locationRepository;
+
     // ---------------------------------------------------------
     // COMMON TEST DATA
     // ---------------------------------------------------------
@@ -75,9 +78,23 @@ class StockTransferReceiptServiceTest {
     private StockTransferItem stockTransferItem;
     private StockReceipt stockReceipt;
     private StockReceiptItem stockReceiptItem;
+    private Location headOfficeLocation;
+    private Location kandyLocation;
+
+    private Location createLocation(Long id, String code) {
+        Location location = new Location();
+        location.setId(id);
+        location.setCode(code);
+        location.setName(code);
+        location.setActive(true);
+        return location;
+    }
 
     @BeforeEach
     void setUp() {
+
+        headOfficeLocation = createLocation(2L, "HEAD_OFFICE");
+        kandyLocation = createLocation(1L, "KANDY");
 
         itemGroup = new ItemGroup();
         itemGroup.setName("Electronics");
@@ -105,8 +122,8 @@ class StockTransferReceiptServiceTest {
         stockTransfer = new StockTransfer();
         stockTransfer.setTransferNo("TRS000001");
         stockTransfer.setTransferDate(LocalDate.now());
-        stockTransfer.setFromLocation(Location.HEAD_OFFICE);
-        stockTransfer.setToLocation(Location.KANDY);
+        stockTransfer.setFromLocation(headOfficeLocation);
+        stockTransfer.setToLocation(kandyLocation);
         stockTransfer.setStatus(Status.APPROVED);
 
         stockTransferItem = new StockTransferItem();
@@ -122,8 +139,8 @@ class StockTransferReceiptServiceTest {
         stockReceipt = new StockReceipt();
         stockReceipt.setReceiptNo("RCP000001");
         stockReceipt.setDate(LocalDate.now());
-        stockReceipt.setFromLocation(Location.HEAD_OFFICE);
-        stockReceipt.setReceiptLocation(Location.KANDY);
+        stockReceipt.setFromLocation(headOfficeLocation);
+        stockReceipt.setReceiptLocation(kandyLocation);
         stockReceipt.setComment("Test receipt");
         stockReceipt.setStatus(Status.UNAPPROVED);
         stockReceipt.setStockTransfer(stockTransfer);
@@ -148,7 +165,7 @@ class StockTransferReceiptServiceTest {
 
         User user = new User();
         user.setUsername("testuser");
-        user.setLocation(Location.KANDY);
+        user.setLocation(kandyLocation);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
@@ -164,7 +181,7 @@ class StockTransferReceiptServiceTest {
 
         Location result = service.getCurrentUserLocation();
 
-        assertEquals(Location.KANDY, result);
+        assertEquals(kandyLocation, result);
 
         verify(userRepository)
                 .findByUsername("testuser");
@@ -208,8 +225,8 @@ class StockTransferReceiptServiceTest {
                 new StockReceiptRequest();
 
         request.setDate(LocalDate.now());
-        request.setFromLocation(Location.HEAD_OFFICE);
-        request.setReceiptLocation(Location.KANDY);
+        request.setFromLocationId(headOfficeLocation.getId());
+        request.setReceiptLocationId(kandyLocation.getId());
         request.setTransferNo("TRS000001");
         request.setComment("Received stock");
 
@@ -243,6 +260,12 @@ class StockTransferReceiptServiceTest {
 
         when(grnItemRepository.findByGrnAndItem(grn, item))
                 .thenReturn(Optional.of(grnItem));
+
+        when(locationRepository.findById(headOfficeLocation.getId()))
+                .thenReturn(Optional.of(headOfficeLocation));
+
+        when(locationRepository.findById(kandyLocation.getId()))
+                .thenReturn(Optional.of(kandyLocation));
 
         when(stockReceiptRepository.save(any(StockReceipt.class)))
                 .thenAnswer(invocation -> {
@@ -414,11 +437,17 @@ class StockTransferReceiptServiceTest {
     @Test
     void getStockTransferList_success() {
 
+        when(locationRepository.findByCode("HEAD_OFFICE"))
+                .thenReturn(Optional.of(headOfficeLocation));
+
+        when(locationRepository.findByCode("KANDY"))
+                .thenReturn(Optional.of(kandyLocation));
+
         when(
                 stockTransferRepository
                         .findByFromLocationAndToLocationAndStatus(
-                                Location.HEAD_OFFICE,
-                                Location.KANDY,
+                                headOfficeLocation,
+                                kandyLocation,
                                 Status.APPROVED,
                                 PageRequest.of(0, 5)
                         )
@@ -429,8 +458,8 @@ class StockTransferReceiptServiceTest {
         List<StockTransferListResponse> result =
                 service.getStockTransferList(
                         0,
-                        Location.HEAD_OFFICE,
-                        Location.KANDY
+                        "HEAD_OFFICE",
+                        "KANDY"
                 );
 
         assertNotNull(result);
@@ -443,12 +472,12 @@ class StockTransferReceiptServiceTest {
         );
 
         assertEquals(
-                Location.HEAD_OFFICE,
+                headOfficeLocation,
                 result.get(0).getFromLocation()
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.get(0).getToLocation()
         );
 
@@ -461,11 +490,17 @@ class StockTransferReceiptServiceTest {
     @Test
     void getStockTransferList_noData_shouldReturnEmptyList() {
 
+        when(locationRepository.findByCode("HEAD_OFFICE"))
+                .thenReturn(Optional.of(headOfficeLocation));
+
+        when(locationRepository.findByCode("KANDY"))
+                .thenReturn(Optional.of(kandyLocation));
+
         when(
                 stockTransferRepository
                         .findByFromLocationAndToLocationAndStatus(
-                                Location.HEAD_OFFICE,
-                                Location.KANDY,
+                                headOfficeLocation,
+                                kandyLocation,
                                 Status.APPROVED,
                                 PageRequest.of(0, 5)
                         )
@@ -476,8 +511,8 @@ class StockTransferReceiptServiceTest {
         List<StockTransferListResponse> result =
                 service.getStockTransferList(
                         0,
-                        Location.HEAD_OFFICE,
-                        Location.KANDY
+                        "HEAD_OFFICE",
+                        "KANDY"
                 );
 
         assertNotNull(result);
@@ -522,12 +557,12 @@ class StockTransferReceiptServiceTest {
         );
 
         assertEquals(
-                Location.HEAD_OFFICE,
+                headOfficeLocation,
                 result.get(0).getFromLocation()
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.get(0).getReceiptLocation()
         );
     }
@@ -628,7 +663,7 @@ class StockTransferReceiptServiceTest {
                 new StockReceiptRequest();
 
         request.setDate(LocalDate.now().plusDays(1));
-        request.setFromLocation(Location.KANDY);
+        request.setFromLocationId(kandyLocation.getId());
         request.setTransferNo("TRS000002");
         request.setComment("Updated receipt");
 
@@ -671,13 +706,16 @@ class StockTransferReceiptServiceTest {
                         .findByGrnAndItem(grn, item)
         ).thenReturn(Optional.of(grnItem));
 
+        when(locationRepository.findById(kandyLocation.getId()))
+                .thenReturn(Optional.of(kandyLocation));
+
         service.updateStockReceipt(
                 "RCP000001",
                 request
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 stockReceipt.getFromLocation()
         );
 

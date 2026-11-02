@@ -1,6 +1,7 @@
 package com.example.inventoryAuth.Repository;
 
 
+import com.example.inventoryAuth.Entity.Status;
 import com.example.inventoryAuth.Entity.StockIssue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -14,5 +15,7 @@ import java.util.function.Predicate;
 public interface StockIssueRepository extends JpaRepository<StockIssue,Long> , JpaSpecificationExecutor<StockIssue> {
 
       Optional<StockIssue> findByIssueNo (String issueNo);
+
+      long countByStatus(Status status);
 
 }

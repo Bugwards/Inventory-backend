@@ -4,7 +4,6 @@ package com.example.inventoryAuth.Controller;
 import com.example.inventoryAuth.DTO.GRNDTO;
 import com.example.inventoryAuth.DTO.GRNResponseDTO;
 import com.example.inventoryAuth.Entity.GRN;
-import com.example.inventoryAuth.Entity.Location;
 import com.example.inventoryAuth.Entity.Status;
 import com.example.inventoryAuth.Service.GRNService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +24,7 @@ public class GRNController {
     }
 
     //create
-    @PreAuthorize("hasAnyRole('STORE_STAFF','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('GRN_CREATE')")
     @PostMapping
     public GRN create(@RequestBody GRNDTO dto) {
 
@@ -34,20 +33,20 @@ public class GRNController {
 
 
     //update
-    @PreAuthorize("hasAnyRole('STORE_STAFF','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('GRN_CREATE')")
     @PutMapping("/{id}")
     public GRN update(@PathVariable Long id, @RequestBody GRNDTO dto) {
 
         return service.save(dto, id);
     }
 //approve
-    @PreAuthorize("hasAnyRole('APPROVING_AUTHORITY','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('GRN_APPROVE')")
     @PutMapping("/approve/{id}")
     public GRN approve(@PathVariable Long id) {
         return service.approve(id);
     }
 //cancel
-@PreAuthorize("hasAnyRole('APPROVING_AUTHORITY','SYSTEM_ADMIN')")
+@PreAuthorize("hasAuthority('GRN_APPROVE')")
     @PutMapping("/cancel/{id}")
     public GRN cancel(@PathVariable Long id, @RequestParam String reason) {
 
@@ -55,7 +54,7 @@ public class GRNController {
     }
 
     //view
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('GRN_VIEW')")
     @GetMapping("/{id}")
     public GRNResponseDTO getById(@PathVariable Long id) {
 
@@ -63,10 +62,10 @@ public class GRNController {
     }
 
     //search
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('GRN_VIEW')")
     @GetMapping
     public List<GRNResponseDTO> search(
-            @RequestParam(required = false) Location location,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String dateFilter,

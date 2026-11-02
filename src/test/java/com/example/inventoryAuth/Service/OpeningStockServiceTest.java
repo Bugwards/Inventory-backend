@@ -5,6 +5,7 @@ import com.example.inventoryAuth.DTO.OpeningStockItemDTO;
 import com.example.inventoryAuth.DTO.OpeningStockResponseDTO;
 import com.example.inventoryAuth.Entity.*;
 import com.example.inventoryAuth.Repository.ItemRepository;
+import com.example.inventoryAuth.Repository.LocationRepository;
 import com.example.inventoryAuth.Repository.OpeningStockRepository;
 import com.example.inventoryAuth.Repository.UserRepository;
 
@@ -68,6 +69,9 @@ class OpeningStockServiceTest {
 
     @Mock
     private Item item;
+
+    @Mock
+    private LocationRepository locationRepository;
 
     @InjectMocks
     private OpeningStockService openingStockService;
@@ -142,6 +146,22 @@ class OpeningStockServiceTest {
 
 
     // =========================================================
+    // HELPER - LOCATION ENTITY
+    // =========================================================
+
+    private Location createLocation(Long id, String code) {
+        Location location = new Location();
+        location.setId(id);
+        location.setCode(code);
+        location.setName(code);
+        location.setActive(true);
+        return location;
+    }
+
+    private final Location kandyLocation = createLocation(1L, "KANDY");
+
+
+    // =========================================================
     // CREATE OPENING STOCK ENTITY
     // =========================================================
 
@@ -152,7 +172,7 @@ class OpeningStockServiceTest {
         os.setOpeningStockId(1L);
         os.setEntryNo("OS-00001");
         os.setOpeningDate(LocalDate.now());
-        os.setLocation(Location.KANDY);
+        os.setLocation(kandyLocation);
         os.setStatus(Status.UNAPPROVED);
         os.setTotalValue(1000.0);
         os.setCreatedBy(currentUser);
@@ -197,7 +217,7 @@ class OpeningStockServiceTest {
                 createValidDTO();
 
         when(currentUser.getLocation())
-                .thenReturn(Location.KANDY);
+                .thenReturn(kandyLocation);
 
         when(itemRepository.findByItemCode("ITEM-001"))
                 .thenReturn(Optional.of(item));
@@ -238,7 +258,7 @@ class OpeningStockServiceTest {
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.getLocation()
         );
 

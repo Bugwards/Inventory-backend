@@ -30,10 +30,10 @@ public class StockIssueController {
     }
 
     @PostMapping("/create/issue")
-    @PreAuthorize("hasRole('STORE_STAFF')")
+    @PreAuthorize("hasAuthority('STOCK_ISSUE_CREATE')")
     public String addStockIssue(@RequestBody StockIssueRequest stockIssueRequest){
-           stockIssueService.createStockIssue(stockIssueRequest);
-           return "Stock Issue Created Successfully";
+        stockIssueService.createStockIssue(stockIssueRequest);
+        return "Stock Issue Created Successfully";
     }
 
     @GetMapping("/getItemList/{keyword}")
@@ -43,7 +43,7 @@ public class StockIssueController {
 
     @GetMapping("/getItem/{itemCode}/details")
     public IssuingItemResponse getItemDetails(@PathVariable String itemCode){
-          return stockIssueService.getItemDetails(itemCode);
+        return stockIssueService.getItemDetails(itemCode);
     }
 
     @GetMapping("/getAllStockIssues")
@@ -52,7 +52,7 @@ public class StockIssueController {
     }
 
     @PutMapping("/updateStockIssueReocrd/{stockIssueNo}")
-    @PreAuthorize("hasRole('STORE_STAFF')")
+    @PreAuthorize("hasAuthority('STOCK_ISSUE_CREATE')")
     public void updateReocrd(@RequestBody StockIssueRequest stockIssueRequest,@PathVariable String stockIssueNo){
         stockIssueService.updateStockIssueRecord(stockIssueRequest ,stockIssueNo);
     }
@@ -63,14 +63,14 @@ public class StockIssueController {
     }
 
     @PutMapping("/approveRecord/{issueNo}")
-    @PreAuthorize("hasRole('APPROVING_AUTHORITY')")
+    @PreAuthorize("hasAuthority('STOCK_ISSUE_APPROVE')")
     public String approveRecord(@PathVariable String issueNo){
         stockIssueService.approveRecord(issueNo);
         return"Approved!";
     }
 
     @PutMapping("/cancelRecord/{issueNo}")
-    @PreAuthorize("hasRole('APPROVING_AUTHORITY')")
+    @PreAuthorize("hasAuthority('STOCK_ISSUE_APPROVE')")
     public String cancelRecord(@PathVariable String issueNo){
         stockIssueService.cancelRecord(issueNo);
         return"Canceled!";
@@ -85,7 +85,7 @@ public class StockIssueController {
     @PostMapping("/filter/issueReocrds")
     public List<StockIssueResponse> filterStockIssues( @RequestBody StockIssueFilterRequest request) {
 
-       return stockIssueService.getFilteredIssues(request);
+        return stockIssueService.getFilteredIssues(request);
 
     }
 

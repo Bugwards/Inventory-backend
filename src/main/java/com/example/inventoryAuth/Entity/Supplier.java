@@ -1,20 +1,25 @@
 package com.example.inventoryAuth.Entity;
 
-public enum Supplier {
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-    SURASAVI_SUPPLIERS("Surasavi Suppliers"),
-    GUNASEKARA_SUPPLIERS("Gunasekara Suppliers"),
-    ATLAS_SUPPLIERS("Atlas Suppliers"),
-    ALPHA_STATIONERIES("Alpha Stationeries"),
-    INNOVATION_TECH("Innovation Tech");
+@Getter
+@Setter
+@Entity
+@Table(name = "suppliers")
+public class Supplier {
 
-    private final String displayName;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    Supplier(String displayName) {
-        this.displayName = displayName;
-    }
+    @Column(unique = true, nullable = false)
+    private String code;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private Boolean active = true;
 }

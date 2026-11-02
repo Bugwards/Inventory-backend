@@ -1,7 +1,11 @@
 package com.example.inventoryAuth.Service;
 
 import com.example.inventoryAuth.DTO.UserDetailsRequest;
+import com.example.inventoryAuth.Entity.Location;
+import com.example.inventoryAuth.Entity.Role;
 import com.example.inventoryAuth.Entity.User;
+import com.example.inventoryAuth.Repository.LocationRepository;
+import com.example.inventoryAuth.Repository.RoleRepository;
 import com.example.inventoryAuth.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -18,11 +22,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final LocationRepository locationRepository;
 
     @Autowired
-    public CustomUserDetailsService(UserRepository userRepository , PasswordEncoder passwordEncoder){
+    public CustomUserDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                                     RoleRepository roleRepository, LocationRepository locationRepository){
         this.userRepository=userRepository;
         this.passwordEncoder=passwordEncoder;
+        this.roleRepository=roleRepository;
+        this.locationRepository=locationRepository;
     }
 
     @Override
@@ -33,13 +42,21 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public void saveUser(UserDetailsRequest userDetails){
 
+        Role role = roleRepository.findById(userDetails.getRoleId())
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        if ("SYSTEM_ADMIN".equals(role.getCode())) {
+            throw new IllegalArgumentException("Self-registration as System Admin is not allowed");
+        }
+
+        Location location = locationRepository.findById(userDetails.getLocationId())
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+
         User user = new User();
         user.setUsername(userDetails.getUsername());
-        user.setRole(userDetails.getRole());
+        user.setRole(role);
         user.setEmail(userDetails.getEmail());
-        user.setDepartment(userDetails.getDepartment());
-        user.setName(userDetails.getName());
-        user.setLocation(userDetails.getLocation());
+        user.setLocation(location);
         user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         userRepository.save(user);
 

@@ -164,6 +164,12 @@ public class StockIssueService {
 
 
         for(Stock stock : stockDetails ){
+            if (stock.getGrnItem() == null) {
+                // Stock without a GRN behind it (e.g. from Opening Stock) can't be
+                // issued through this GRN-traceable flow - skip rather than NPE.
+                continue;
+            }
+
             GrnWiseStockDto grnDetails = new GrnWiseStockDto();
             grnDetails.setCurrentQty(Long.valueOf(stock.getCurrentQty()));
             grnDetails.setGrnNumber(stock.getGrnItem().getGrn().getGrnNumber());
@@ -185,12 +191,12 @@ public class StockIssueService {
 
         for(StockIssue stockIssue: stockIssueRecords.getContent()){
             StockIssueResponse response = new StockIssueResponse();
-             response.setIssueNo(stockIssue.getIssueNo());
-             response.setIssueDate(stockIssue.getDate());
-             response.setLocation(stockIssue.getCurrentLocation());
-             response.setDepartment(stockIssue.getDepartment());
-             response.setApprovedDate(stockIssue.getApprovedDate());
-             response.setStatus(stockIssue.getStatus());
+            response.setIssueNo(stockIssue.getIssueNo());
+            response.setIssueDate(stockIssue.getDate());
+            response.setLocation(stockIssue.getCurrentLocation());
+            response.setDepartment(stockIssue.getDepartment());
+            response.setApprovedDate(stockIssue.getApprovedDate());
+            response.setStatus(stockIssue.getStatus());
             responseList.add(response);
         }
 
@@ -359,7 +365,7 @@ public class StockIssueService {
             grnItemIssuedDtoList.add(grnItemIssuedDto);
 
 
-             itemIssuedDto.setGrnItems(grnItemIssuedDtoList);
+            itemIssuedDto.setGrnItems(grnItemIssuedDtoList);
             itemIssuedDtoList.add(itemIssuedDto);
         }
 
@@ -370,7 +376,7 @@ public class StockIssueService {
     }
 
     public void approveRecord(String issueNo){
-       StockIssue stockIssue = stockIssueRepository.findByIssueNo(issueNo).orElseThrow(()->new RuntimeException("Relevent Records Not Found"));
+        StockIssue stockIssue = stockIssueRepository.findByIssueNo(issueNo).orElseThrow(()->new RuntimeException("Relevent Records Not Found"));
 
         if(stockIssue.getStatus() == Status.APPROVED){
             throw new RuntimeException("Already Approved");
@@ -380,23 +386,23 @@ public class StockIssueService {
             throw new RuntimeException("Can't Be Approved");
         }
 
-       stockIssue.setStatus(Status.APPROVED);
+        stockIssue.setStatus(Status.APPROVED);
 
-       List<StockIssueItem> stockIssueItemList = stockIssue.getIssueItems();
-       for(StockIssueItem stockIssueItem : stockIssueItemList){
+        List<StockIssueItem> stockIssueItemList = stockIssue.getIssueItems();
+        for(StockIssueItem stockIssueItem : stockIssueItemList){
 
-           Stock stock = stockRepository.findByItemAndGrnItem(stockIssueItem.getItem(),stockIssueItem.getGrnItem());
+            Stock stock = stockRepository.findByItemAndGrnItem(stockIssueItem.getItem(),stockIssueItem.getGrnItem());
 
-           stock.setActualQty(stock.getActualQty() - stockIssueItem.getIssuedQuantity());
-           stockRepository.save(stock);
-           binCardService.createBinCardFromStockIssue(
-                   stock,
-                   stockIssue,
-                   stockIssueItem
-           );
-       }
+            stock.setActualQty(stock.getActualQty() - stockIssueItem.getIssuedQuantity());
+            stockRepository.save(stock);
+            binCardService.createBinCardFromStockIssue(
+                    stock,
+                    stockIssue,
+                    stockIssueItem
+            );
+        }
 
-       stockIssueRepository.save(stockIssue);
+        stockIssueRepository.save(stockIssue);
 
     }
 
@@ -475,7 +481,7 @@ public class StockIssueService {
             }
 
             if (req.getLocation() != null && !req.getLocation().equals("ALL")) {
-                predicates.add(cb.equal(root.get("currentLocation"), req.getLocation()));
+                predicates.add(cb.equal(root.get("currentLocation").get("code"), req.getLocation()));
             }
 
             if (req.getDepartment() != null && !req.getDepartment().equals("ALL")) {

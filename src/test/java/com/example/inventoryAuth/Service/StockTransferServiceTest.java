@@ -52,6 +52,9 @@ class StockTransferServiceTest {
     @Mock
     BinCardServiceTest binCardService;
 
+    @Mock
+    LocationRepository locationRepository;
+
     @InjectMocks
     StockTransferService stockTransferService;
 
@@ -59,6 +62,19 @@ class StockTransferServiceTest {
     // ---------------------------------------------------------
     // Helper method
     // ---------------------------------------------------------
+
+    private Location createLocation(Long id, String code) {
+        Location location = new Location();
+        location.setId(id);
+        location.setCode(code);
+        location.setName(code);
+        location.setActive(true);
+        return location;
+    }
+
+    private final Location kandyLocation = createLocation(1L, "KANDY");
+    private final Location headOfficeLocation = createLocation(2L, "HEAD_OFFICE");
+
 
     private UserDetails mockUserDetails() {
 
@@ -76,7 +92,7 @@ class StockTransferServiceTest {
         User user = mock(User.class);
 
         when(user.getLocation())
-                .thenReturn(Location.HEAD_OFFICE);
+                .thenReturn(headOfficeLocation);
 
         return user;
     }
@@ -216,10 +232,10 @@ class StockTransferServiceTest {
                 .thenReturn(LocalDate.now());
 
         when(stockTransfer.getFromLocation())
-                .thenReturn(Location.HEAD_OFFICE);
+                .thenReturn(headOfficeLocation);
 
         when(stockTransfer.getToLocation())
-                .thenReturn(Location.KANDY);
+                .thenReturn(kandyLocation);
 
         when(stockTransfer.getStatus())
                 .thenReturn(Status.UNAPPROVED);
@@ -246,12 +262,12 @@ class StockTransferServiceTest {
         );
 
         assertEquals(
-                Location.HEAD_OFFICE,
+                headOfficeLocation,
                 result.get(0).getFromLocation()
         );
 
         assertEquals(
-                Location.KANDY,
+                kandyLocation,
                 result.get(0).getToLocation()
         );
     }
@@ -313,7 +329,7 @@ class StockTransferServiceTest {
                 .thenReturn(LocalDate.now());
 
         when(stockTransfer.getToLocation())
-                .thenReturn(Location.KANDY);
+                .thenReturn(kandyLocation);
 
         when(stockTransfer.getRequestRef())
                 .thenReturn("REQ001");
@@ -335,8 +351,8 @@ class StockTransferServiceTest {
         assertNotNull(result);
 
         assertEquals(
-                Location.KANDY,
-                result.getToLocation()
+                kandyLocation.getId(),
+                result.getToLocationId()
         );
 
         assertEquals(

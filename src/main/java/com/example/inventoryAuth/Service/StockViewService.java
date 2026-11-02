@@ -5,6 +5,7 @@ package com.example.inventoryAuth.Service;
 import com.example.inventoryAuth.DTO.StockViewDTO;
 import com.example.inventoryAuth.Entity.Stock;
 import com.example.inventoryAuth.Entity.Location;
+import com.example.inventoryAuth.Repository.LocationRepository;
 import com.example.inventoryAuth.Repository.StockRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,22 +16,27 @@ import java.util.List;
 public class StockViewService {
 
     private final StockRepository stockRepository;
+    private final LocationRepository locationRepository;
 
-    public StockViewService(StockRepository stockRepository) {
+    public StockViewService(StockRepository stockRepository, LocationRepository locationRepository) {
         this.stockRepository = stockRepository;
+        this.locationRepository = locationRepository;
     }
 
     // =========================
     // STOCK VIEW (UI / REPORTING)
     // =========================
-    public List<StockViewDTO> getStockView(Location location) {
+    public List<StockViewDTO> getStockView(String locationCode) {
 
         List<Stock> stocks = stockRepository.findAll();
 
         // FILTER BY LOCATION
-        if (location != null) {
+        if (locationCode != null && !locationCode.isBlank()) {
+            Long locationId = locationRepository.findByCode(locationCode)
+                    .map(Location::getId)
+                    .orElse(null);
             stocks = stocks.stream()
-                    .filter(s -> s.getLocation() == location)
+                    .filter(s -> s.getLocation() != null && s.getLocation().getId().equals(locationId))
                     .toList();
         }
 

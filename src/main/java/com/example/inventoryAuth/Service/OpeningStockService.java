@@ -3,6 +3,7 @@ package com.example.inventoryAuth.Service;
 import com.example.inventoryAuth.DTO.*;
 import com.example.inventoryAuth.Entity.*;
 import com.example.inventoryAuth.Repository.ItemRepository;
+import com.example.inventoryAuth.Repository.LocationRepository;
 import com.example.inventoryAuth.Repository.OpeningStockRepository;
 import com.example.inventoryAuth.Repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -23,17 +24,20 @@ public class OpeningStockService {
     private final StockService stockService;
     private final UserRepository userRepository;
     private final BinCardService binCardService;
+    private final LocationRepository locationRepository;
 
     public OpeningStockService(OpeningStockRepository repository,
             ItemRepository itemRepository,
             StockService stockService,
             UserRepository userRepository,
-            BinCardService binCardService) {
+            BinCardService binCardService,
+            LocationRepository locationRepository) {
         this.repository = repository;
         this.itemRepository = itemRepository;
         this.stockService = stockService;
         this.userRepository = userRepository;
         this.binCardService = binCardService;
+        this.locationRepository = locationRepository;
     }
 
     // =========================
@@ -187,7 +191,7 @@ public class OpeningStockService {
     // SEARCH
     // =========================
     public List<OpeningStock> search(
-            Location location,
+            String locationCode,
             Status status,
             String keyword,
             String dateFilter,
@@ -196,9 +200,12 @@ public class OpeningStockService {
 
         List<OpeningStock> list = repository.findAll();
 
-        if (location != null) {
+        if (locationCode != null && !locationCode.isBlank()) {
+            Long locationId = locationRepository.findByCode(locationCode)
+                    .map(Location::getId)
+                    .orElse(null);
             list = list.stream()
-                    .filter(o -> o.getLocation() == location)
+                    .filter(o -> o.getLocation() != null && o.getLocation().getId().equals(locationId))
                     .toList();
         }
 
@@ -274,7 +281,7 @@ public class OpeningStockService {
 
         dto.setOpeningStockId(os.getOpeningStockId());
         dto.setEntryNo(os.getEntryNo());
-        dto.setLocation(os.getLocation());
+
         dto.setOpeningDate(os.getOpeningDate());
         dto.setTotalValue(os.getTotalValue());
         dto.setStatus(os.getStatus().name());

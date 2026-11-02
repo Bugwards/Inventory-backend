@@ -1,7 +1,6 @@
 package com.example.inventoryAuth.Utility;
 
 
-import com.example.inventoryAuth.Entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -19,13 +18,13 @@ public class JwtUtil {
     private final String SECRETE_KEY =  "a8f9c3e7b1d4a6f92c8e5f7a1b3d6c9e8f2a4b6c7d9e1f3a5c7b9d2e4f6a8c1";
     private final SecretKey key = Keys.hmacShaKeyFor(SECRETE_KEY.getBytes());
 
-    public String generateToken(String username, Role role){
+    public String generateToken(String username, String roleCode){
 
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+EXPIRATION_TIME))
-                .claim("role", role)
+                .claim("role", roleCode)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 

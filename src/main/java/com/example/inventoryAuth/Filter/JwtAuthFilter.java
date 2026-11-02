@@ -45,24 +45,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String username=null;
         String token=null;
 
-
-        if(authHeader!=null && authHeader.startsWith("Bearer ")){
-            token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
-        }
-
-        if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){
-            UserDetails user = customUserDetailsService.loadUserByUsername(username);
-
-            if(jwtUtil.isTokenValid(username,user,token)){
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        user.getAuthorities());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            if(authHeader!=null && authHeader.startsWith("Bearer ")){
+                token = authHeader.substring(7);
+                username = jwtUtil.extractUsername(token);
             }
+
+            if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){
+                UserDetails user = customUserDetailsService.loadUserByUsername(username);
+
+                if(jwtUtil.isTokenValid(username,user,token)){
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            user,
+                            null,
+                            user.getAuthorities());
+
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+        } catch (Exception e) {
+            // Stale, malformed, or otherwise unusable token (e.g. it names a user
+            // that no longer exists after a DB reset). Fall through as anonymous
+            // rather than letting the exception propagate and turn every request -
+            // including public endpoints - into a blanket 403 via the default
+            // AuthenticationEntryPoint.
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request,response);
