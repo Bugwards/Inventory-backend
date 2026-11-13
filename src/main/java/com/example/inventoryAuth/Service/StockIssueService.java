@@ -155,6 +155,12 @@ public class StockIssueService {
 
 
         for(Stock stock : stockDetails ){
+            if (stock.getGrnItem() == null) {
+                // Stock without a GRN behind it (e.g. from Opening Stock) can't be
+                // issued through this GRN-traceable flow - skip rather than NPE.
+                continue;
+            }
+
             GrnWiseStockDto grnDetails = new GrnWiseStockDto();
             grnDetails.setCurrentQty(Long.valueOf(stock.getCurrentQty()));
             grnDetails.setGrnNumber(stock.getGrnItem().getGrn().getGrnNumber());

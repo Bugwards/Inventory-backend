@@ -7,7 +7,6 @@ import com.example.inventoryAuth.DTO.OpeningStockDTO;
 import com.example.inventoryAuth.DTO.OpeningStockResponseDTO;
 import com.example.inventoryAuth.Entity.GRN;
 import com.example.inventoryAuth.Entity.OpeningStock;
-import com.example.inventoryAuth.Entity.Location;
 import com.example.inventoryAuth.Entity.Status;
 import com.example.inventoryAuth.Service.OpeningStockService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +26,7 @@ public class OpeningStockController {
     }
 
     // CREATE
-    @PreAuthorize("hasAnyRole('STORE_STAFF','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('OPENING_STOCK_CREATE')")
     @PostMapping
     public OpeningStock create(@RequestBody OpeningStockDTO dto) {
         return service.save(dto, null);
@@ -35,7 +34,7 @@ public class OpeningStockController {
 
 
     // UPDATE
-    @PreAuthorize("hasAnyRole('STORE_STAFF','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('OPENING_STOCK_CREATE')")
     @PutMapping("/{id}")
     public OpeningStock update(@PathVariable Long id,
                                @RequestBody OpeningStockDTO dto) {
@@ -44,14 +43,14 @@ public class OpeningStockController {
 
 
     // APPROVE
-    @PreAuthorize("hasAnyRole('APPROVING_AUTHORITY','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('OPENING_STOCK_APPROVE')")
     @PutMapping("/approve/{id}")
     public OpeningStock approve(@PathVariable Long id) {
         return service.approve(id);
     }
 
     // CANCEL
-    @PreAuthorize("hasAnyRole('APPROVING_AUTHORITY','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAuthority('OPENING_STOCK_APPROVE')")
     @PutMapping("/cancel/{id}")
     public OpeningStock cancel(@PathVariable Long id,
                                @RequestParam String reason) {
@@ -59,7 +58,7 @@ public class OpeningStockController {
     }
 
     //VIEW
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('OPENING_STOCK_VIEW')")
     @GetMapping("/{id}")
     public OpeningStockResponseDTO getById(@PathVariable Long id)
     {
@@ -67,10 +66,10 @@ public class OpeningStockController {
     }
 
     //SEARCH
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('OPENING_STOCK_VIEW')")
     @GetMapping
     public List<OpeningStock> search(
-            @RequestParam(required = false) Location location,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String dateFilter,

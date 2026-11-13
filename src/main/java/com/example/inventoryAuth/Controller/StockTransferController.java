@@ -20,18 +20,18 @@ public class StockTransferController {
     StockTransferService stockTransferservice;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN', 'REQUESTING_OFFICER', 'APPROVING_AUTHORITY', 'FINANCIAL_SUPPLIER')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_CREATE')")
     // 1
     // to catch and pass stock transfer data
     public String sTransfer(@RequestBody StockTransferRequest stockTransferRequest) {
-        System.out.println("CONTROLLER REACHED ");
+        System.out.println("CONTROLLER REACHED");
         stockTransferservice.stockTransferSave(stockTransferRequest);
         return "success";
     }
 
     // to get item list of related entered keyword
     @GetMapping("/getItem")
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN', 'REQUESTING_OFFICER', 'APPROVING_AUTHORITY', 'FINANCIAL_SUPPLIER')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_CREATE')")
     public List<ItemResponseSearchByKeyword> findItem(@RequestParam String keyword) {
         return stockTransferservice.findItemByName(keyword);
 
@@ -39,7 +39,7 @@ public class StockTransferController {
 
     // to fill item details for selected item
     @GetMapping("/itemDetails")
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN', 'REQUESTING_OFFICER', 'APPROVING_AUTHORITY', 'FINANCIAL_SUPPLIER')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_CREATE')")
     public SelectedItemResponse getItemDetails(@RequestParam String itemCode) {
         return stockTransferservice.getItemDetails(itemCode);
     }
@@ -57,7 +57,7 @@ public class StockTransferController {
     }
 
     @PutMapping("/updateStockTransferRecord/{stockTransferNo}")
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN', 'APPROVING_AUTHORITY')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_UPDATE')")
     public String updateStockTransferRecord(@PathVariable String stockTransferNo,
             @RequestBody StockTransferRequest stockTransferRequest) {
         stockTransferservice.updateStockTransferRecord(stockTransferNo, stockTransferRequest);
@@ -66,7 +66,7 @@ public class StockTransferController {
 
     // approve the stockTransfer
     @PutMapping("/approveStockTransfer/{stockTransferNo}")
-    @PreAuthorize("hasAuthority('ROLE_SYSTEM_ADMIN') or hasAuthority('ROLE_APPROVING_AUTHORITY')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_APPROVE')")
     public String approveStockTransfer(@PathVariable String stockTransferNo) {
         stockTransferservice.approveStockTransfer(stockTransferNo);
         return "successfully Approved Stock Transfer";
@@ -74,7 +74,7 @@ public class StockTransferController {
 
     // cansel the stockTrasnfer
     @PutMapping("/canselStockTransfer/{stockTransferNo}")
-    @PreAuthorize("hasAnyRole('APPROVING_AUTHORITY', 'SYSTEM_ADMIN', 'STORE_STAFF')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_CANCEL')")
     public String cancelStockTransfer(@PathVariable String stockTransferNo) {
         stockTransferservice.cancelStockTransfer(stockTransferNo);
         return " Cancelled Stock Transfer";
@@ -82,14 +82,14 @@ public class StockTransferController {
 
     // enter cansel msg
     @PutMapping("/getCanselMsg/")
-    @PreAuthorize("hasAnyRole('APPROVING_AUTHORITY', 'SYSTEM_ADMIN', 'STORE_STAFF')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_CANCEL')")
     public String getCanselMsg(@RequestParam String stockTransferNo, @RequestBody String canselMsg) {
         stockTransferservice.getCancelMsg(stockTransferNo, canselMsg);
         return "successfully Cancelled Stock Transfer";
     }
 
     @GetMapping("/currentUserLocation")
-    @PreAuthorize("hasAnyRole('STORE_STAFF', 'SYSTEM_ADMIN', 'REQUESTING_OFFICER', 'APPROVING_AUTHORITY', 'FINANCIAL_SUPPLIER')")
+    @PreAuthorize("hasAuthority('STOCK_TRANSFER_CREATE')")
     public Location getCurrentUserLocation() {
         return stockTransferservice.getCurrentUserLocation();
     }

@@ -4,7 +4,6 @@ package com.example.inventoryAuth.Controller;
 
 
 import com.example.inventoryAuth.DTO.StockViewDTO;
-import com.example.inventoryAuth.Entity.Location;
 import com.example.inventoryAuth.Service.StockViewService;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +22,7 @@ public class StockViewController {
 
     @GetMapping
     public List<StockViewDTO> getStockView(
-            @RequestParam(required = false) Location location
+            @RequestParam(required = false) String location
     ) {
         return service.getStockView(location);
     }
