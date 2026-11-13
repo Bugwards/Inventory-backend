@@ -13,8 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.example.inventoryAuth.Security.CurrentUserProvider;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -41,29 +40,13 @@ public class StockIssueService {
     StockRepository stockRepository;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
     BinCardService binCardService;
 
-    public Location getCurrentUserLocation() {
-        Object principal = SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
+    @Autowired
+    AuditLogService auditLogService;
 
-        String username;
-
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return user.getLocation();
-    }
-
+    @Autowired
+    CurrentUserProvider currentUserProvider;
 
     @Transactional
     public void createStockIssue(StockIssueRequest request){
@@ -74,7 +57,7 @@ public class StockIssueService {
         stockIssue.setRequestRef(request.getRequestRef());
         stockIssue.setComment(request.getComment());
         stockIssue.setStatus(Status.UNAPPROVED);
-        stockIssue.setCurrentLocation(getCurrentUserLocation());
+        stockIssue.setCurrentLocation(currentUserProvider.getCurrentUserLocation());
 
         if(request.getItems()!=null && !request.getItems().isEmpty()){
 
@@ -128,6 +111,14 @@ public class StockIssueService {
             String issueNo = "ISU" + String.format("%06d", savedStockIssue.getId());
             savedStockIssue.setIssueNo(issueNo);
             stockIssueRepository.save(savedStockIssue);
+
+            // trigger the audit log record //
+
+            auditLogService.log(
+                    currentUserProvider.getCurrentUsername(),
+                    issueNo,
+                    "Created Stock Issue " + issueNo + " for " + savedStockIssue.getDepartment()
+            );
 
         }
     }
